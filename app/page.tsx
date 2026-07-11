@@ -710,7 +710,7 @@ export default function Home() {
           <div>
             <p className="lead-line light">PRICING</p>
             <h2>Start free.<br />Scale when <span>ready.</span></h2>
-            <p>See the evidence report during private beta. Paid platform testing, competitor gaps and the 90-day action plan open next phase.</p>
+            <p>See the evidence report free. Use the sandbox to rehearse premium access safely before real payments are connected.</p>
           </div>
         </div>
         <div className="pricing-grid">
@@ -730,7 +730,7 @@ export default function Home() {
             <div className="popular-badge">Most popular</div>
             <span className="price-label">Full Audit</span>
             <h3>$19.99</h3>
-            <p>Payment opens next phase</p>
+            <p>Sandbox checkout · no real charge</p>
             <ul>
               <li>Everything in Free</li>
               <li>Platform-by-platform prompt and citation tests</li>
@@ -739,7 +739,7 @@ export default function Home() {
               <li>Evidence-linked fixes prioritized by impact</li>
               <li>Copy-ready schema, answer blocks and 90-day roadmap</li>
             </ul>
-            <a href="#scanner">Preview the full report <span>↗</span></a>
+            <a href="/checkout?plan=full-audit">Test sandbox checkout <span>↗</span></a>
           </article>
           <article className="price-card consult">
             <span className="price-label">Done-For-You</span>
@@ -753,7 +753,7 @@ export default function Home() {
               <li>Priority support</li>
             </ul>
             <small className="price-note">Final quote depends on scope and site complexity.</small>
-            <a href="/contact">Book consultation <span>↗</span></a>
+            <a href="/checkout?plan=done-for-you">Test consultation order <span>↗</span></a>
           </article>
         </div>
       </section>

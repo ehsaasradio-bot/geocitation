@@ -30,3 +30,27 @@ export const savedAudits = sqliteTable(
     index("saved_audits_owner_domain_idx").on(table.ownerKey, table.domain),
   ],
 );
+
+export const sandboxOrders = sqliteTable(
+  "sandbox_orders",
+  {
+    id: text("id").primaryKey(),
+    ownerKey: text("owner_key").notNull(),
+    plan: text("plan").notNull(),
+    amountCents: integer("amount_cents").notNull(),
+    currency: text("currency").notNull().default("USD"),
+    status: text("status").notNull().default("test_paid"),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [index("sandbox_orders_owner_created_idx").on(table.ownerKey, table.createdAt)],
+);
+
+export const sandboxEntitlements = sqliteTable(
+  "sandbox_entitlements",
+  {
+    ownerKey: text("owner_key").primaryKey(),
+    fullAudit: integer("full_audit", { mode: "boolean" }).notNull().default(false),
+    consultation: integer("consultation", { mode: "boolean" }).notNull().default(false),
+    updatedAt: integer("updated_at").notNull(),
+  },
+);

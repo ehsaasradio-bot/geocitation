@@ -65,6 +65,7 @@ export function ReportClient() {
     }
   }, [storedAudit]);
   const [remoteResult, setRemoteResult] = useState<AuditResult | null | undefined>(undefined);
+  const [premiumUnlocked, setPremiumUnlocked] = useState(false);
   const reportId = useSyncExternalStore(subscribeToLocation, getReportId, getServerReportId);
   const remoteMode = Boolean(reportId);
 
@@ -75,6 +76,13 @@ export function ReportClient() {
       .then((payload) => setRemoteResult(payload.report))
       .catch(() => setRemoteResult(null));
   }, [reportId]);
+
+  useEffect(() => {
+    void fetch("/api/billing/status", { cache: "no-store" })
+      .then(async (response) => response.ok ? response.json() as Promise<{ fullAudit: boolean }> : Promise.reject(new Error("status unavailable")))
+      .then((payload) => setPremiumUnlocked(payload.fullAudit))
+      .catch(() => undefined);
+  }, []);
 
   const result = remoteMode ? remoteResult : localResult;
 
@@ -236,11 +244,22 @@ export function ReportClient() {
         <div><span>LIMITATION</span><p>This report tests public technical and content signals. Live answer-engine citation testing requires model-specific prompt runs and is intentionally not represented as completed here.</p></div>
       </section>
 
+      {premiumUnlocked && <section className="premium-roadmap" id="roadmap">
+        <div className="report-section-head"><span>06 / SANDBOX PREMIUM</span><div><h2>Your 90-day <span>action map.</span></h2><p>A deterministic planning layer assembled from this report’s evidence. It is a sandbox preview—not a model-specific citation test.</p></div></div>
+        <div className="roadmap-grid">
+          {[0, 1, 2].map((period) => {
+            const labels = ["DAYS 01–30", "DAYS 31–60", "DAYS 61–90"];
+            const actions = issues.slice(period * 2, period * 2 + 2);
+            return <article key={labels[period]}><span>{labels[period]}</span><strong>{String(period + 1).padStart(2, "0")}</strong>{actions.length ? actions.map((finding) => <div key={finding.code}><b>{finding.code}</b><h3>{finding.action}</h3><p>{finding.evidence}</p></div>) : <div><b>VERIFY</b><h3>Re-run the audit and measure progress.</h3><p>Confirm improved evidence before moving to model-specific prompt testing.</p></div>}</article>;
+          })}
+        </div>
+      </section>}
+
       <section className="report-upgrade">
         <div>
-          <p className="lead-line light">NEXT PHASE / PAID DELIVERY</p>
+          <p className="lead-line light">{premiumUnlocked ? "SANDBOX ACCESS / ACTIVE" : "SANDBOX / PAYMENT REHEARSAL"}</p>
           <h2>Turn evidence into a <span>90-day action plan.</span></h2>
-          <p>The checkout is deliberately offline in this build. The paid report layer is prepared for platform prompt tests, competitor gaps, copy-ready fixes and a downloadable executive PDF.</p>
+          <p>{premiumUnlocked ? "Your test entitlement is active. The 90-day action map above is unlocked without a real charge." : "Run the complete account-to-entitlement flow in test mode. No card fields or real payment processor are connected."}</p>
         </div>
         <ul>
           <li>Platform-by-platform prompt and citation tests</li>
@@ -248,7 +267,7 @@ export function ReportClient() {
           <li>Copy-ready schema, llms.txt and answer blocks</li>
           <li>Prioritized 30 / 60 / 90-day roadmap</li>
         </ul>
-        <button type="button" disabled>Payment opens next phase <span>↗</span></button>
+        <Link href={premiumUnlocked ? "/account" : "/checkout?plan=full-audit"}>{premiumUnlocked ? "View sandbox order" : "Test sandbox checkout"} <span>↗</span></Link>
       </section>
 
       <footer className="report-footer">

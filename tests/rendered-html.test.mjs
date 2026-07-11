@@ -68,7 +68,7 @@ test("server-renders the Signal observatory", async () => {
   assert.match(html, /HOW IT WORKS/);
   assert.match(html, /From invisible site to/);
   assert.match(html, /43 SIGNALS/);
-  assert.match(html, /Preview the full report/);
+  assert.match(html, /Test sandbox checkout/);
   assert.match(html, /My reports/);
   assert.doesNotMatch(html, /LIVE SIGNAL MAP/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
@@ -84,6 +84,21 @@ test("keeps saved report data behind sign-in", async () => {
   assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow");
   const payload = await response.json();
   assert.match(payload.error, /Sign in/i);
+});
+
+test("exposes sandbox status without accepting anonymous orders", async () => {
+  const worker = await loadWorker("sandbox-billing");
+  const status = await worker.fetch(new Request("http://localhost/api/billing/status"), env, ctx);
+  assert.equal(status.status, 200);
+  assert.deepEqual(await status.json(), { testMode: true, fullAudit: false, consultation: false, orders: [] });
+
+  const checkout = await worker.fetch(new Request("http://localhost/api/billing/sandbox-checkout", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ plan: "full-audit" }),
+  }), env, ctx);
+  assert.equal(checkout.status, 401);
+  assert.match((await checkout.json()).error, /Sign in/i);
 });
 
 test("rejects private and local audit targets before streaming", async () => {
@@ -160,7 +175,7 @@ test("server-renders the full public information and report routes", async () =>
     ["/methodology", /A score you can inspect/],
     ["/privacy", /Report storage/],
     ["/report", /ASSEMBLING EVIDENCE REPORT/],
-    ["/terms", /Pre-payment release/],
+    ["/terms", /Sandbox checkout/],
   ]);
 
   for (const [path, pattern] of expected) {

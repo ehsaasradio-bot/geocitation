@@ -11,7 +11,9 @@ AI SIGNAL° is a live website observatory for public AI discoverability and cita
 - Methodology, FAQ, about, contact, privacy, terms, and accessibility pages
 - Public `robots.txt`, `sitemap.xml`, `llms.txt`, and JSON-LD
 
-The current pre-payment release keeps the latest report in browser storage for anonymous visitors and saves reports durably for signed-in users. Checkout, model-specific prompt testing, and generated PDF delivery remain reserved for later phases.
+The current pre-payment release keeps the latest report in browser storage for anonymous visitors and saves reports durably for signed-in users. Real payment processing, model-specific prompt testing, and generated PDF delivery remain reserved for later phases.
+
+Phase 3 includes an explicitly labeled payment sandbox. It records simulated orders and entitlements for end-to-end product testing, accepts no card data, and processes no real money.
 
 Phase 1 production protection uses D1-backed salted rate-limit identifiers, bounded crawl budgets, same-origin request enforcement and centralized security headers.
 

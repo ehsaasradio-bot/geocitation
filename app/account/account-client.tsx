@@ -19,6 +19,7 @@ function formatDate(value: string) {
 
 export function AccountClient() {
   const [reports, setReports] = useState<ReportSummary[] | null>(null);
+  const [sandbox, setSandbox] = useState<{ fullAudit: boolean; consultation: boolean; orders: unknown[] } | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -26,6 +27,13 @@ export function AccountClient() {
       .then(async (response) => response.ok ? response.json() as Promise<{ reports: ReportSummary[] }> : Promise.reject(new Error("Your report history could not be loaded.")))
       .then((payload) => setReports(payload.reports))
       .catch((loadError: unknown) => setError(loadError instanceof Error ? loadError.message : "Your report history could not be loaded."));
+  }, []);
+
+  useEffect(() => {
+    void fetch("/api/billing/status", { cache: "no-store" })
+      .then(async (response) => response.json() as Promise<{ fullAudit: boolean; consultation: boolean; orders: unknown[] }>)
+      .then(setSandbox)
+      .catch(() => undefined);
   }, []);
 
   const remove = async (id: string) => {
@@ -37,6 +45,7 @@ export function AccountClient() {
   return (
     <section className="account-history" aria-labelledby="history-title">
       <div className="account-history-head"><span>01 / SAVED EVIDENCE</span><h2 id="history-title">Audit <span>timeline.</span></h2></div>
+      {sandbox && <div className="sandbox-account-strip"><span>PAYMENT SANDBOX / TEST MODE</span><strong>{sandbox.fullAudit ? "FULL AUDIT ACTIVE" : sandbox.consultation ? "CONSULTATION TESTED" : "NO TEST ORDER"}</strong><p>{sandbox.orders.length} sandbox {sandbox.orders.length === 1 ? "order" : "orders"} · No real charges</p><Link href="/checkout?plan=full-audit">Open sandbox ↗</Link></div>}
       {error && <p className="account-error" role="alert">{error}</p>}
       {reports === null && !error && <p className="account-loading"><i className="live-dot" />LOADING PRIVATE REPORTS</p>}
       {reports?.length === 0 && (
