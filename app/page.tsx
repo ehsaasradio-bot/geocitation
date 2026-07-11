@@ -502,9 +502,9 @@ export default function Home() {
           <span>SIGNAL ACQUISITION</span>
         </div>
         <div className="banner-title">
-          <h1 id="launch-title">AI SIGNAL<sup>°</sup></h1>
+          <h1 id="launch-title"><span>AI</span><span>SIGNAL</span><sup>°</sup></h1>
         </div>
-        <p className="banner-copy">See the web as answer engines see it—discoverable, understandable, trusted or invisible.</p>
+        <p className="banner-copy">SEE WHAT AI CAN FIND. FIX WHAT IT CAN’T.</p>
         <div className="banner-actions">
           <a className="banner-button primary" href="#scanner"><span>Test Now</span><i>↗</i></a>
           <a className="banner-button secondary" href="#method"><span>How It Works</span><i>↓</i></a>

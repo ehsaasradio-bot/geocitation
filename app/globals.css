@@ -69,10 +69,11 @@ nav a:hover { color: var(--signal); }
 .node-a { left: 18%; top: 42%; }
 .node-b { right: 22%; top: 26%; animation-delay: -.7s; }
 .node-c { right: 30%; bottom: 19%; animation-delay: -1.25s; }
-.banner-title { position: absolute; z-index: 4; left: 2.1vw; right: 2.1vw; top: 48%; transform: translateY(-50%); text-align: center; pointer-events: none; }
-.banner-title h1 { max-width: none; white-space: nowrap; margin: 0; color: #f2f1ed; font-size: clamp(76px,16.3vw,282px); font-weight: 560; letter-spacing: -.085em; line-height: .78; text-shadow: 0 9px 60px rgba(0,0,0,.35); }
-.banner-title sup { display: inline-block; color: var(--signal); font-size: .22em; line-height: 1; letter-spacing: 0; vertical-align: top; margin: -.05em 0 0 .08em; }
-.banner-copy { position: absolute; z-index: 6; left: 50%; bottom: 16.5vh; transform: translateX(-50%); width: min(510px,70vw); margin: 0; color: rgba(241,238,229,.62); text-align: center; font-size: 13px; line-height: 1.55; letter-spacing: -.01em; }
+.banner-title { position: absolute; z-index: 4; left: 1.05vw; right: 1.05vw; top: 48%; transform: translateY(-50%); text-align: center; pointer-events: none; }
+.banner-title h1 { max-width: none; white-space: nowrap; margin: 0; color: #f2f1ed; font-size: clamp(76px,16.3vw,282px); font-weight: 560; letter-spacing: -.085em; line-height: .78; text-shadow: 0 9px 60px rgba(0,0,0,.35); display: flex; justify-content: center; align-items: flex-start; }
+.banner-title h1 > span + span { margin-left: .09em; }
+.banner-title sup { display: inline-block; color: var(--signal); font-size: .22em; line-height: 1; letter-spacing: 0; margin: -.05em 0 0 .08em; }
+.banner-copy { position: absolute; z-index: 6; left: 50%; bottom: 16.5vh; transform: translateX(-50%); width: min(330px,62vw); margin: 0; color: rgba(241,238,229,.62); text-align: center; font: 600 9px/1.7 var(--font-geist-mono), monospace; letter-spacing: .15em; }
 .banner-actions { position: absolute; z-index: 6; left: 50%; bottom: 7vh; transform: translateX(-50%); display: flex; gap: 10px; }
 .banner-button { height: 52px; min-width: 170px; border-radius: 999px; display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 0 18px 0 21px; font: 650 10px var(--font-geist-mono), monospace; text-transform: uppercase; letter-spacing: .08em; transition: transform .28s ease,background .28s ease,color .28s ease,border-color .28s ease; }
 .banner-button i { font-style: normal; font-size: 13px; }
@@ -285,7 +286,7 @@ footer > div a:hover { color: var(--signal); }
   .signal-planet { width: 116vw; top: 15%; }
   .banner-title { top: 42%; left: 10px; right: 10px; }
   .banner-title h1 { font-size: 17.8vw; letter-spacing: -.075em; }
-  .banner-copy { bottom: 152px; width: calc(100% - 42px); font-size: 12px; }
+  .banner-copy { bottom: 152px; width: min(300px,calc(100% - 42px)); font-size: 8px; letter-spacing: .13em; }
   .banner-actions { bottom: 56px; width: calc(100% - 36px); display: grid; grid-template-columns: 1fr 1fr; }
   .banner-button { min-width: 0; height: 50px; gap: 8px; padding: 0 14px; }
   .hero { padding-top: 0; }

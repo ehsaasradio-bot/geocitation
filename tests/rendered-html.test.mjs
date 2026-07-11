@@ -30,7 +30,8 @@ test("server-renders the Signal observatory", async () => {
 
   const html = await response.text();
   assert.match(html, /SIGNAL°/);
-  assert.match(html, /AI SIGNAL/);
+  assert.match(html, /AI<\/span><span>SIGNAL/);
+  assert.match(html, /SEE WHAT AI CAN FIND\. FIX WHAT IT CAN’T\./);
   assert.match(html, />Test Now</);
   assert.match(html, />How It Works</);
   assert.match(html, /Your website exists/);
