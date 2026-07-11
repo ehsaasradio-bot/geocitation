@@ -17,7 +17,7 @@ export function CheckoutClient({ plan, email }: { plan: SandboxPlan; email: stri
   const complete = async () => {
     setState("working");
     try {
-      const response = await fetch("/api/billing/sandbox-checkout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan }) });
+      const response = await fetch("/api/billing/sandbox-checkout/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ plan }) });
       if (!response.ok) throw new Error("Sandbox checkout failed");
       setState("complete");
     } catch {

@@ -92,7 +92,7 @@ test("exposes sandbox status without accepting anonymous orders", async () => {
   assert.equal(status.status, 200);
   assert.deepEqual(await status.json(), { testMode: true, fullAudit: false, consultation: false, orders: [] });
 
-  const checkout = await worker.fetch(new Request("http://localhost/api/billing/sandbox-checkout", {
+  const checkout = await worker.fetch(new Request("http://localhost/api/billing/sandbox-checkout/", {
     method: "POST",
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ plan: "full-audit" }),
