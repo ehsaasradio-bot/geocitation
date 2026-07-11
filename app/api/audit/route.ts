@@ -1,26 +1,39 @@
 export const dynamic = "force-dynamic";
 
+import type { AuditCategory, AuditResource } from "../../audit-types";
+
 const MAX_PAGE_BYTES = 900_000;
 const MAX_RESOURCE_BYTES = 300_000;
 const MAX_PAGES = 6;
 const REQUEST_TIMEOUT_MS = 9_000;
 
 const AI_CRAWLERS = [
-  "GPTBot",
-  "ChatGPT-User",
-  "OAI-SearchBot",
-  "ClaudeBot",
-  "Claude-SearchBot",
-  "PerplexityBot",
-  "Google-Extended",
-  "Bytespider",
-  "CCBot",
-  "Applebot-Extended",
-  "Amazonbot",
-  "FacebookBot",
-  "cohere-ai",
-  "YouBot",
+  { name: "OAI-SearchBot", purpose: "search_index", scoreEligible: true },
+  { name: "ChatGPT-User", purpose: "user_retrieval", scoreEligible: true },
+  { name: "GPTBot", purpose: "training_control", scoreEligible: false },
+  { name: "Claude-SearchBot", purpose: "search_index", scoreEligible: true },
+  { name: "Claude-User", purpose: "user_retrieval", scoreEligible: true },
+  { name: "ClaudeBot", purpose: "training_control", scoreEligible: false },
+  { name: "PerplexityBot", purpose: "search_index", scoreEligible: true },
+  { name: "Perplexity-User", purpose: "user_retrieval", scoreEligible: true },
+  { name: "Googlebot", purpose: "search_index", scoreEligible: true },
+  { name: "Google-Extended", purpose: "training_control", scoreEligible: false },
+  { name: "Bingbot", purpose: "search_index", scoreEligible: true },
+  { name: "Applebot-Extended", purpose: "training_control", scoreEligible: false },
+  { name: "CCBot", purpose: "training_control", scoreEligible: false },
+  { name: "Amazonbot", purpose: "training_control", scoreEligible: false },
 ] as const;
+
+const SCORE_RULES = {
+  technical: ["https", "status", "htmlContentType", "title", "description", "canonical", "viewport", "language", "robots", "sitemap"],
+  structuredData: ["jsonLd", "schemaBreadth", "primaryEntity", "answerSchema"],
+  content: ["wordDepth", "singleH1", "headingStructure", "summaryMetadata", "passageShape", "questionCoverage", "factDensity", "pageCoverage"],
+  trust: ["about", "contact", "legal", "authorship", "freshness", "externalSources", "sameAs", "measurableEvidence"],
+  aiAccess: ["eligibleCrawlerAccess", "llmsGuidance", "sitemapDiscovery", "answerPassages", "entityMarkup", "homepageDepth"],
+  answerability: ["questionHeadings", "answerSchema", "extractablePassages", "lists", "tables", "metadata", "headingCoverage"],
+} as const;
+
+const SIGNALS_CHECKED = Object.values(SCORE_RULES).reduce((total, rules) => total + rules.length, 0);
 
 type Tone = "good" | "warn" | "bad";
 
@@ -62,6 +75,7 @@ type PageSignals = {
   externalLinks: number;
   internalLinks: string[];
   schemaTypes: string[];
+  entityCount: number;
   hasSameAs: boolean;
   hasAboutLink: boolean;
   hasContactLink: boolean;
@@ -131,6 +145,7 @@ function countMatches(value: string, pattern: RegExp) {
 function collectSchema(html: string) {
   const types = new Set<string>();
   let hasSameAs = false;
+  let entityCount = 0;
   const scripts = html.match(/<script\b[^>]*>[\s\S]*?<\/script>/gi) ?? [];
 
   const visit = (value: unknown) => {
@@ -141,8 +156,15 @@ function collectSchema(html: string) {
     if (!value || typeof value !== "object") return;
     const record = value as Record<string, unknown>;
     const rawType = record["@type"];
-    if (typeof rawType === "string") types.add(rawType);
-    if (Array.isArray(rawType)) rawType.filter((item): item is string => typeof item === "string").forEach((item) => types.add(item));
+    if (typeof rawType === "string") {
+      types.add(rawType);
+      if (typeof record.name === "string" || typeof record["@id"] === "string") entityCount += 1;
+    }
+    if (Array.isArray(rawType)) {
+      const validTypes = rawType.filter((item): item is string => typeof item === "string");
+      validTypes.forEach((item) => types.add(item));
+      if (validTypes.length && (typeof record.name === "string" || typeof record["@id"] === "string")) entityCount += 1;
+    }
     if (Array.isArray(record.sameAs) && record.sameAs.length > 0) hasSameAs = true;
     Object.values(record).forEach(visit);
   };
@@ -159,7 +181,7 @@ function collectSchema(html: string) {
     }
   }
 
-  return { types: [...types].slice(0, 30), hasSameAs };
+  return { types: [...types].slice(0, 30), hasSameAs, entityCount };
 }
 
 function extractLinks(html: string, base: URL) {
@@ -188,6 +210,38 @@ function extractLinks(html: string, base: URL) {
   }
 
   return { internal: [...internal], external };
+}
+
+function extractSitemapLinks(xml: string, base: URL) {
+  const links = new Set<string>();
+  const matches = xml.match(/<loc\b[^>]*>[\s\S]*?<\/loc>/gi) ?? [];
+
+  for (const match of matches.slice(0, 500)) {
+    const raw = cleanText(match.replace(/^<loc\b[^>]*>/i, "").replace(/<\/loc>$/i, ""));
+    if (!raw) continue;
+    try {
+      const link = new URL(raw, base);
+      if (link.origin !== base.origin || !/^https?:$/.test(link.protocol)) continue;
+      if (/\.(?:xml|pdf|jpe?g|png|gif|webp|svg|zip|mp4|mp3|woff2?|css|js)$/i.test(link.pathname)) continue;
+      link.hash = "";
+      link.search = "";
+      links.add(link.href.replace(/\/$/, "") || link.origin);
+    } catch {
+      // Ignore malformed sitemap entries.
+    }
+  }
+
+  return [...links];
+}
+
+function pagePriority(value: string) {
+  const path = new URL(value).pathname.toLowerCase();
+  if (/\/(?:about|company|team)(?:\/|$)/.test(path)) return 0;
+  if (/\/(?:services?|products?|solutions?)(?:\/|$)/.test(path)) return 1;
+  if (/\/(?:faq|help|guides?|resources?)(?:\/|$)/.test(path)) return 2;
+  if (/\/(?:blog|insights?|news|research)(?:\/|$)/.test(path)) return 3;
+  if (/\/(?:contact|privacy|terms)(?:\/|$)/.test(path)) return 5;
+  return 4;
 }
 
 function analyzePage(page: FetchResult): PageSignals {
@@ -230,6 +284,7 @@ function analyzePage(page: FetchResult): PageSignals {
     externalLinks: external,
     internalLinks: internal,
     schemaTypes: schema.types,
+    entityCount: schema.entityCount,
     hasSameAs: schema.hasSameAs,
     hasAboutLink: lowerLinks.some((path) => /\/(?:about|company|team)(?:\/|$)/.test(path)),
     hasContactLink: lowerLinks.some((path) => /\/(?:contact|support)(?:\/|$)/.test(path)),
@@ -359,7 +414,7 @@ async function fetchPublic(url: URL, byteLimit = MAX_PAGE_BYTES, auditSignal?: A
   throw new Error("The website redirected too many times.");
 }
 
-function parseRobots(robots: string) {
+function parseRobots(robots: string, status: number | null) {
   const groups = new Map<string, { allow: string[]; disallow: string[] }>();
   let agents: string[] = [];
   let sawRule = false;
@@ -391,16 +446,37 @@ function parseRobots(robots: string) {
     }
   }
 
-  const access = AI_CRAWLERS.map((name) => {
-    const exact = groups.get(name.toLowerCase());
+  const policyUnknown = status === null || (![200, 404, 410].includes(status));
+  const policyAbsent = status === 404 || status === 410;
+  const access = AI_CRAWLERS.map((crawler) => {
+    if (policyUnknown) {
+      return {
+        ...crawler,
+        allowed: null,
+        state: "unknown" as const,
+        reason: status ? `robots.txt returned HTTP ${status}` : "robots.txt could not be fetched",
+      };
+    }
+    if (policyAbsent) {
+      return {
+        ...crawler,
+        allowed: true,
+        state: "allowed" as const,
+        reason: "No robots.txt restrictions published",
+      };
+    }
+
+    const exact = groups.get(crawler.name.toLowerCase());
     const fallback = groups.get("*");
     const rules = exact ?? fallback;
-    if (!rules) return { name, allowed: true, reason: "No blocking rule" };
+    if (!rules) return { ...crawler, allowed: true, state: "allowed" as const, reason: "No matching blocking rule" };
     const blocksAll = rules.disallow.some((path) => path === "/" || path === "/*");
     const allowsRoot = rules.allow.some((path) => path === "/" || path === "/*");
+    const allowed = !blocksAll || allowsRoot;
     return {
-      name,
-      allowed: !blocksAll || allowsRoot,
+      ...crawler,
+      allowed,
+      state: allowed ? "allowed" as const : "blocked" as const,
       reason: blocksAll && !allowsRoot ? "Disallow: /" : "Accessible",
     };
   });
@@ -436,7 +512,11 @@ function scoreAudit(
   const answerBlocks = pages.reduce((sum, page) => sum + page.answerBlocks, 0);
   const questionHeadings = pages.reduce((sum, page) => sum + page.questionHeadings, 0);
   const statisticalBlocks = pages.reduce((sum, page) => sum + page.statisticalBlocks, 0);
-  const allowedCrawlers = crawlerAccess.filter((crawler) => crawler.allowed).length;
+  const entityCount = pages.reduce((sum, page) => sum + page.entityCount, 0);
+  const measuredCrawlers = crawlerAccess.filter((crawler) => crawler.allowed !== null);
+  const allowedCrawlers = measuredCrawlers.filter((crawler) => crawler.allowed).length;
+  const eligibleCrawlers = crawlerAccess.filter((crawler) => crawler.scoreEligible && crawler.allowed !== null);
+  const allowedEligibleCrawlers = eligibleCrawlers.filter((crawler) => crawler.allowed).length;
   const robotsExists = resources.robots?.status === 200;
   const sitemapExists = resources.sitemap?.status === 200 && /<(?:urlset|sitemapindex)\b/i.test(resources.sitemap.body);
   const llmsExists = resources.llms?.status === 200 && cleanText(resources.llms.body).length > 40;
@@ -457,12 +537,11 @@ function scoreAudit(
   technical += home.status >= 200 && home.status < 300 ? 15 : 0;
   technical += home.title ? 10 : 0;
   technical += home.description ? 10 : 0;
-  technical += home.canonical ? 8 : 0;
-  technical += home.hasViewport ? 8 : 0;
-  technical += home.lang ? 7 : 0;
-  technical += robotsExists ? 7 : 3;
-  technical += sitemapExists ? 10 : 0;
-  technical += home.responseMs <= 2_500 ? 10 : home.responseMs <= 5_000 ? 5 : 0;
+  technical += home.canonical ? 10 : 0;
+  technical += home.hasViewport ? 10 : 0;
+  technical += home.lang ? 8 : 0;
+  technical += resources.robots && [200, 404, 410].includes(resources.robots.status) ? 7 : 0;
+  technical += sitemapExists ? 15 : 0;
 
   let schema = 0;
   schema += allTypes.size > 0 ? 35 : 0;
@@ -491,12 +570,12 @@ function scoreAudit(
   trust += statisticalBlocks >= 3 ? 10 : statisticalBlocks > 0 ? 4 : 0;
 
   let aiReadiness = 0;
-  aiReadiness += (allowedCrawlers / AI_CRAWLERS.length) * 35;
-  aiReadiness += llmsExists ? 15 : 0;
-  aiReadiness += sitemapExists ? 10 : 0;
-  aiReadiness += answerBlocks >= 8 ? 15 : answerBlocks > 0 ? 7 : 0;
+  aiReadiness += eligibleCrawlers.length ? (allowedEligibleCrawlers / eligibleCrawlers.length) * 40 : 0;
+  aiReadiness += llmsExists ? 3 : 0;
+  aiReadiness += sitemapExists ? 15 : 0;
+  aiReadiness += answerBlocks >= 8 ? 20 : answerBlocks > 0 ? 9 : 0;
   aiReadiness += allTypes.size > 0 ? 15 : 0;
-  aiReadiness += home.wordCount >= 150 ? 10 : 0;
+  aiReadiness += home.wordCount >= 150 ? 7 : 0;
 
   let answerability = 0;
   answerability += questionHeadings >= 4 ? 20 : questionHeadings > 0 ? 10 : 0;
@@ -507,13 +586,13 @@ function scoreAudit(
   answerability += home.title && home.description ? 10 : 4;
   answerability += home.headingCount >= 4 ? 10 : home.headingCount > 0 ? 5 : 0;
 
-  const categories = [
-    { key: "aiReadiness", label: "AI readiness", score: clamp(aiReadiness) },
-    { key: "content", label: "Content quality", score: clamp(content) },
-    { key: "technical", label: "Technical", score: clamp(technical) },
-    { key: "trust", label: "Trust signals", score: clamp(trust) },
-    { key: "schema", label: "Structured data", score: clamp(schema) },
-    { key: "answerability", label: "Answerability", score: clamp(answerability) },
+  const categories: AuditCategory[] = [
+    { key: "aiReadiness", label: "AI access", score: clamp(aiReadiness), weight: 25, description: "Crawler access, machine guidance and public discovery signals." },
+    { key: "content", label: "Content citability", score: clamp(content), weight: 20, description: "Self-contained answers, useful structure and evidence density." },
+    { key: "technical", label: "Technical indexability", score: clamp(technical), weight: 15, description: "Fetchability, metadata, canonical signals and sitemap health." },
+    { key: "trust", label: "Entity & trust", score: clamp(trust), weight: 15, description: "Ownership, authorship, external proof and organizational clarity." },
+    { key: "schema", label: "Structured data", score: clamp(schema), weight: 10, description: "Parseable entities and page-specific Schema.org vocabulary." },
+    { key: "answerability", label: "Answer readiness", score: clamp(answerability), weight: 15, description: "Question coverage and passages that can support direct answers." },
   ];
   const byKey = Object.fromEntries(categories.map((category) => [category.key, category.score]));
   const score = clamp(
@@ -528,11 +607,15 @@ function scoreAudit(
   const findings: Finding[] = [];
   const add = (finding: Finding) => findings.push(finding);
 
-  if (allowedCrawlers < AI_CRAWLERS.length) {
-    const blocked = crawlerAccess.filter((crawler) => !crawler.allowed).map((crawler) => crawler.name);
-    add({ code: "CRAWL-01", label: "AI crawler access", value: `${allowedCrawlers}/${AI_CRAWLERS.length} allowed`, tone: allowedCrawlers < 8 ? "bad" : "warn", evidence: `Blocked for the homepage: ${blocked.join(", ")}.`, action: "Review the matching user-agent groups in robots.txt before changing access intentionally." });
+  const unknownCrawlers = crawlerAccess.filter((crawler) => crawler.allowed === null);
+  const blockedCrawlers = crawlerAccess.filter((crawler) => crawler.allowed === false);
+  if (unknownCrawlers.length) {
+    add({ code: "CRAWL-01", label: "AI crawler access", value: "Policy unknown", tone: "warn", evidence: `Access could not be established for ${unknownCrawlers.length} agents because robots.txt was unavailable or returned an inconclusive response.`, action: "Verify that robots.txt is publicly reachable, then rerun the audit." });
+  } else if (blockedCrawlers.length) {
+    const blocked = blockedCrawlers.map((crawler) => crawler.name);
+    add({ code: "CRAWL-01", label: "AI crawler access", value: `${allowedCrawlers}/${measuredCrawlers.length} allowed`, tone: allowedEligibleCrawlers < Math.ceil(eligibleCrawlers.length / 2) ? "bad" : "warn", evidence: `Blocked for the homepage: ${blocked.join(", ")}.`, action: "Review the matching user-agent groups in robots.txt before changing access intentionally." });
   } else {
-    add({ code: "CRAWL-01", label: "AI crawler access", value: "All allowed", tone: "good", evidence: `No homepage-blocking rule was found for ${AI_CRAWLERS.length} checked AI agents.`, action: "Keep monitoring robots.txt when deployment or security rules change." });
+    add({ code: "CRAWL-01", label: "AI crawler access", value: "All measured allowed", tone: "good", evidence: `No homepage-blocking rule was found for ${measuredCrawlers.length} checked AI agents. Training controls are reported separately and do not drive retrieval scoring.`, action: "Keep monitoring robots.txt when deployment or security rules change." });
   }
 
   if (!llmsExists) add({ code: "AI-04", label: "llms.txt guidance", value: "Not detected", tone: "warn", evidence: `${target.origin}/llms.txt did not return a usable guidance file.`, action: "Publish a concise llms.txt that points models to canonical high-value pages." });
@@ -554,8 +637,40 @@ function scoreAudit(
   const toneOrder: Record<Tone, number> = { bad: 0, warn: 1, good: 2 };
   findings.sort((a, b) => toneOrder[a.tone] - toneOrder[b.tone]);
 
-  const signalsChecked = 47;
+  const signalsChecked = SIGNALS_CHECKED;
+  const resourcesReport: AuditResource[] = [
+    {
+      key: "robots",
+      label: "robots.txt",
+      url: `${target.origin}/robots.txt`,
+      status: resources.robots?.status ?? null,
+      detected: robotsExists,
+      detail: robotsExists
+        ? "Crawler directives fetched and evaluated."
+        : resources.robots && [404, 410].includes(resources.robots.status)
+          ? "No robots.txt file is published; no file-level restrictions were present."
+          : "Crawler policy could not be verified from the robots.txt response.",
+    },
+    {
+      key: "sitemap",
+      label: "sitemap.xml",
+      url: `${target.origin}/sitemap.xml`,
+      status: resources.sitemap?.status ?? null,
+      detected: sitemapExists,
+      detail: sitemapExists ? `${discoveredCount} URLs were discoverable from public site signals.` : "No valid XML sitemap was detected at the standard path.",
+    },
+    {
+      key: "llms",
+      label: "llms.txt",
+      url: `${target.origin}/llms.txt`,
+      status: resources.llms?.status ?? null,
+      detected: llmsExists,
+      detail: llmsExists ? "A usable language-model guidance file was detected." : "No usable language-model guidance file was detected.",
+    },
+  ];
+
   return {
+    auditVersion: "signal-2026.1",
     target: target.href,
     domain: target.hostname,
     score,
@@ -567,15 +682,27 @@ function scoreAudit(
       pagesDiscovered: discoveredCount,
       pagesScanned: pages.length,
       crawlersAllowed: allowedCrawlers,
+      crawlersMeasured: measuredCrawlers.length,
       crawlerTotal: AI_CRAWLERS.length,
-      entities: allTypes.size,
+      entities: entityCount,
+      schemaTypes: allTypes.size,
       answerBlocks,
       signalsChecked,
       durationMs,
     },
-    pages: pages.map((page) => ({ url: page.url, status: page.status, title: page.title || "Untitled", words: page.wordCount })),
+    pages: pages.map((page) => ({
+      url: page.url,
+      status: page.status,
+      title: page.title || "Untitled",
+      description: page.description,
+      words: page.wordCount,
+      h1Count: page.h1Count,
+      answerBlocks: page.answerBlocks,
+      schemaTypes: page.schemaTypes,
+    })),
     crawlerAccess,
-    methodology: "A deterministic readiness assessment based on the fetched pages and public technical resources. It does not claim that an AI platform currently cites the domain.",
+    resources: resourcesReport,
+    methodology: "A deterministic source-HTML readiness assessment based on fetched pages and public technical resources. JavaScript-rendered content may not be fully represented, and this report does not claim that an AI platform currently cites the domain.",
     scannedAt: new Date().toISOString(),
   };
 }
@@ -596,7 +723,9 @@ export async function POST(request: Request) {
 
   let target: URL;
   try {
-    const payload = (await request.json()) as { url?: unknown };
+    const body = await request.text();
+    if (body.length > 4_096) throw new Error("The audit request was too large.");
+    const payload = JSON.parse(body) as { url?: unknown };
     if (typeof payload.url !== "string") throw new Error("Enter a website address to begin.");
     target = normalizeTarget(payload.url);
   } catch (error) {
@@ -644,12 +773,21 @@ export async function POST(request: Request) {
         const robots = robotsSettled.status === "fulfilled" ? robotsSettled.value : null;
         const sitemap = sitemapSettled.status === "fulfilled" ? sitemapSettled.value : null;
         const llms = llmsSettled.status === "fulfilled" ? llmsSettled.value : null;
-        const robotRules = parseRobots(robots?.status === 200 ? robots.body : "");
+        const robotRules = parseRobots(robots?.status === 200 ? robots.body : "", robots?.status ?? null);
+        const measured = robotRules.access.filter((crawler) => crawler.allowed !== null).length;
         const allowed = robotRules.access.filter((crawler) => crawler.allowed).length;
-        send("progress", { phase: 2, progress: 39, label: "Testing AI crawler access", meta: `${allowed}/${AI_CRAWLERS.length} AI agents allowed` });
+        send("progress", {
+          phase: 2,
+          progress: 39,
+          label: "Testing AI crawler access",
+          meta: measured ? `${allowed}/${measured} measured AI agents allowed` : "Crawler policy could not be verified",
+        });
 
-        const crawlTargets = discoveredLinks
+        const sitemapLinks = sitemap?.status === 200 ? extractSitemapLinks(sitemap.body, target) : [];
+        const crawlTargets = [...new Set([...discoveredLinks, ...sitemapLinks])]
+          .filter((link) => link !== target.href.replace(/\/$/, "") && link !== target.origin)
           .filter((link) => !isPathDisallowed(new URL(link).pathname, robotRules.genericDisallows))
+          .sort((a, b) => pagePriority(a) - pagePriority(b))
           .slice(0, MAX_PAGES - 1);
         const pageSettled = await Promise.allSettled(crawlTargets.map((link) => fetchPublic(new URL(link), MAX_PAGE_BYTES, auditController.signal)));
         const fetchedPages = pageSettled
@@ -663,9 +801,9 @@ export async function POST(request: Request) {
         const answerBlocks = pageSignals.reduce((sum, page) => sum + page.answerBlocks, 0);
         send("progress", { phase: 4, progress: 72, label: "Reading answer passages", meta: `${answerBlocks} extractable blocks evaluated` });
 
-        const discoveredFromSitemap = sitemap?.status === 200 ? countMatches(sitemap.body, /<loc\b/gi) : 0;
+        const discoveredFromSitemap = sitemapLinks.length;
         const discoveredCount = Math.max(discoveredLinks.length + 1, discoveredFromSitemap, pageSignals.length);
-        send("progress", { phase: 5, progress: 86, label: "Evaluating answer-engine signals", meta: `${pageSignals.length} pages sampled · 47 checks` });
+        send("progress", { phase: 5, progress: 86, label: "Evaluating answer-engine signals", meta: `${pageSignals.length} pages sampled · ${SIGNALS_CHECKED} checks` });
 
         const result = scoreAudit(
           target,

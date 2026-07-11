@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { AUDIT_STORAGE_KEY, type AuditResult, type AuditTone } from "./audit-types";
 
 const scanStages = [
   { label: "Establishing secure crawl", meta: "TLS + headers" },
@@ -8,7 +9,7 @@ const scanStages = [
   { label: "Testing AI crawler access", meta: "14 agents checked" },
   { label: "Extracting entities & schema", meta: "Parsing JSON-LD" },
   { label: "Reading answer passages", meta: "Scoring extractability" },
-  { label: "Evaluating answer-engine signals", meta: "47 deterministic checks" },
+  { label: "Evaluating answer-engine signals", meta: "43 deterministic checks" },
   { label: "Assembling visibility fingerprint", meta: "Evidence ready" },
 ];
 
@@ -36,45 +37,24 @@ const signalCards = [
   },
 ];
 
-const sampleFindings: AuditFinding[] = [
-  { code: "CRAWL-01", label: "AI crawler access", value: "All allowed", tone: "good", evidence: "No homepage-blocking rules were found for the checked AI agents.", action: "Keep monitoring robots.txt when deployment rules change." },
-  { code: "SCHEMA-07", label: "Organization entity", value: "Incomplete", tone: "warn", evidence: "The business entity is present but does not include stable sameAs references.", action: "Connect the Organization entity to verified external profiles." },
-  { code: "CONTENT-14", label: "Answer extractability", value: "Strong", tone: "good", evidence: "Multiple self-contained passages can be extracted without surrounding context.", action: "Strengthen the best passages with attributed evidence." },
-  { code: "TRUST-03", label: "First-party evidence", value: "Missing", tone: "bad", evidence: "No attributable statistics or original research were found in the sample.", action: "Publish measurable first-party facts with dates and methodology." },
+const landingFaqs = [
+  {
+    question: "What does AI Signal check?",
+    answer: "It checks whether answer engines can discover, crawl, understand, trust and cite your website from public signals.",
+  },
+  {
+    question: "Is this different from SEO?",
+    answer: "Yes. SEO optimizes for search rankings. AI Signal focuses on whether AI systems can read your pages and use them as answer-ready evidence.",
+  },
+  {
+    question: "Do you guarantee citations?",
+    answer: "No honest product can guarantee AI citations. We show the blockers, missing proof and fixes that increase citation readiness.",
+  },
+  {
+    question: "What happens after the free score?",
+    answer: "You can inspect the evidence report during this private beta. Payment for deeper platform tests and the 90-day plan opens in the next phase.",
+  },
 ];
-
-type AuditTone = "good" | "warn" | "bad";
-
-type AuditFinding = {
-  code: string;
-  label: string;
-  value: string;
-  tone: AuditTone;
-  evidence: string;
-  action: string;
-};
-
-type AuditResult = {
-  target: string;
-  domain: string;
-  score: number;
-  grade: string;
-  label: string;
-  categories: Array<{ key: string; label: string; score: number }>;
-  findings: AuditFinding[];
-  metrics: {
-    pagesDiscovered: number;
-    pagesScanned: number;
-    crawlersAllowed: number;
-    crawlerTotal: number;
-    entities: number;
-    answerBlocks: number;
-    signalsChecked: number;
-    durationMs: number;
-  };
-  pages: Array<{ url: string; status: number; title: string; words: number }>;
-  methodology: string;
-};
 
 type ScanGraphProps = {
   phase: number;
@@ -84,6 +64,24 @@ type ScanGraphProps = {
   pageNames: string[];
   nodeTones: AuditTone[];
 };
+
+function AgentCount() {
+  const [count, setCount] = useState(7);
+
+  useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const nextCount = () => setCount((current) => {
+      let next = Math.floor(Math.random() * 8) + 3;
+      if (next === current) next = next === 10 ? 3 : next + 1;
+      return next;
+    });
+
+    const timer = window.setInterval(nextCount, 950);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  return <strong className="agent-count">{count}</strong>;
+}
 
 function ScanGraph({ phase, running, complete, domain, pageNames, nodeTones }: ScanGraphProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -109,13 +107,13 @@ function ScanGraph({ phase, running, complete, domain, pageNames, nodeTones }: S
     let pointerY = 0;
 
     const pages = [
-      { x: 0.12, y: 0.22, name: "/services", at: 1, status: "good" },
-      { x: 0.2, y: 0.48, name: "/about", at: 1, status: "good" },
-      { x: 0.11, y: 0.72, name: "/insights", at: 2, status: "warn" },
-      { x: 0.33, y: 0.12, name: "/pricing", at: 2, status: "good" },
-      { x: 0.34, y: 0.82, name: "/cases", at: 3, status: "bad" },
-      { x: 0.48, y: 0.23, name: "schema", at: 3, status: "warn" },
-      { x: 0.5, y: 0.76, name: "answers", at: 4, status: "good" },
+      { x: 0.12, y: 0.22, name: "DISCOVERY", at: 1, status: "good" },
+      { x: 0.2, y: 0.48, name: "ARCHITECTURE", at: 1, status: "good" },
+      { x: 0.11, y: 0.72, name: "CRAWLER POLICY", at: 2, status: "warn" },
+      { x: 0.33, y: 0.12, name: "MACHINE FILES", at: 2, status: "good" },
+      { x: 0.34, y: 0.82, name: "ENTITY TRUST", at: 3, status: "bad" },
+      { x: 0.48, y: 0.23, name: "SCHEMA", at: 3, status: "warn" },
+      { x: 0.5, y: 0.76, name: "ANSWER BLOCKS", at: 4, status: "good" },
     ];
 
     const engines = [
@@ -261,7 +259,7 @@ function ScanGraph({ phase, running, complete, domain, pageNames, nodeTones }: S
         }
       });
 
-      engines.forEach((engine, index) => {
+      engines.forEach((engine) => {
         const ex = engine.x * width + px * 0.35;
         const ey = engine.y * height + py * 0.35;
         const reached = state.complete || (state.running && state.phase >= 5);
@@ -323,14 +321,12 @@ export default function Home() {
   const [domain, setDomain] = useState("yourwebsite.com");
   const [phase, setPhase] = useState(-1);
   const [progress, setProgress] = useState(0);
-  const [score, setScore] = useState(0);
   const [running, setRunning] = useState(false);
   const [complete, setComplete] = useState(false);
   const [stageLabel, setStageLabel] = useState("");
   const [stageMeta, setStageMeta] = useState("");
   const [auditError, setAuditError] = useState("");
   const [result, setResult] = useState<AuditResult | null>(null);
-  const [selectedFinding, setSelectedFinding] = useState<string | null>(null);
   const scanAbortRef = useRef<AbortController | null>(null);
   const runTokenRef = useRef(0);
 
@@ -338,16 +334,11 @@ export default function Home() {
 
   useEffect(() => {
     if (!result) return;
-    const started = performance.now();
-    let frame = 0;
-    const animate = (now: number) => {
-      const ratio = Math.min(1, (now - started) / 1_050);
-      const eased = 1 - Math.pow(1 - ratio, 3);
-      setScore(Math.round(result.score * eased));
-      if (ratio < 1) frame = requestAnimationFrame(animate);
-    };
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
+    try {
+      window.localStorage.setItem(AUDIT_STORAGE_KEY, JSON.stringify(result));
+    } catch {
+      // The live result still works when browser storage is unavailable.
+    }
   }, [result]);
 
   const startScan = async (event: FormEvent<HTMLFormElement>) => {
@@ -365,13 +356,15 @@ export default function Home() {
     setComplete(false);
     setPhase(0);
     setProgress(3);
-    setScore(0);
     setResult(null);
-    setSelectedFinding(null);
     setAuditError("");
     setStageLabel(scanStages[0].label);
     setStageMeta(`Connecting to ${normalized}`);
     setRunning(true);
+
+    window.requestAnimationFrame(() => {
+      document.getElementById("audit-experience")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
 
     scanAbortRef.current?.abort();
     const scanController = new AbortController();
@@ -455,15 +448,12 @@ export default function Home() {
   };
 
   const activeStage = scanStages[Math.max(0, phase)];
-  const activeFindings = result?.findings.length ? result.findings.slice(0, 5) : sampleFindings;
   const signalCardData = signalCards.map((card, index) => {
     if (!result) return card;
-    if (index === 0) return { ...card, stat: String(result.metrics.crawlersAllowed), unit: `of ${result.metrics.crawlerTotal}` };
+    if (index === 0) return { ...card, stat: String(result.metrics.crawlersAllowed), unit: `of ${result.metrics.crawlersMeasured}` };
     if (index === 1) return { ...card, stat: String(result.metrics.answerBlocks), unit: "blocks" };
     return { ...card, stat: String(result.metrics.entities), unit: "entities" };
   });
-  const categoryScores = result?.categories.map((category) => category.score) ?? [55, 82, 68, 94, 73, 88];
-  const fingerprintBars = [...categoryScores, ...categoryScores].map((value, index) => Math.max(12, Math.min(100, Math.round(value * (index % 3 === 0 ? 0.82 : index % 3 === 1 ? 1 : 0.92)))));
   const pageNames = result?.pages.map((page) => {
     try {
       const path = new URL(page.url).pathname;
@@ -475,7 +465,7 @@ export default function Home() {
   const nodeTones: AuditTone[] = result?.categories.map((category) => category.score >= 75 ? "good" : category.score >= 50 ? "warn" : "bad") ?? [];
 
   return (
-    <main>
+    <main id="main-content">
       <header className="site-header">
         <a className="brand" href="#top" aria-label="Signal home">
           <span className="brand-mark"><i /><i /><i /></span>
@@ -483,15 +473,21 @@ export default function Home() {
         </a>
         <nav aria-label="Main navigation">
           <a href="#method">Method</a>
-          <a href="#signals">Signals</a>
-          <a href="#evidence">Evidence</a>
+          <a href="#pricing">Pricing</a>
+          <a href="/faq">FAQ</a>
+          <a href="/about">About</a>
+          <a href="/contact">Contact</a>
         </nav>
+        <details className="mobile-menu">
+          <summary>Menu</summary>
+          <div><a href="#method">Method</a><a href="#pricing">Pricing</a><a href="/faq">FAQ</a><a href="/about">About</a><a href="/contact">Contact</a><a href="#scanner">Run an audit</a></div>
+        </details>
         <a className="header-cta" href="#scanner">Run an audit <span>↗</span></a>
       </header>
 
       <section className="launch-banner" id="top" aria-labelledby="launch-title">
         <div className="banner-atmosphere" aria-hidden="true" />
-        <div className="banner-kicker"><span>AI VISIBILITY / 2026</span><span>LIVE CITATION SIGNALS</span></div>
+        <div className="banner-kicker"><span>AI VISIBILITY / 2026</span><span>LIVE READINESS SIGNALS</span></div>
         <div className="signal-planet" aria-hidden="true">
           <i className="planet-orbit orbit-a" />
           <i className="planet-orbit orbit-b" />
@@ -505,114 +501,247 @@ export default function Home() {
           <h1 id="launch-title"><span>AI</span><span>SIGNAL</span><sup>°</sup></h1>
         </div>
         <p className="banner-copy">SEE WHAT AI CAN FIND. FIX WHAT IT CAN’T.</p>
-        <h3 className="banner-question">YOUR WEBSITE EXISTS.<br />DOES AI KNOW IT?</h3>
+        <h3 className="banner-question">YOUR WEBSITE EXISTS. DOES AI KNOW IT?</h3>
         <div className="banner-actions">
           <a className="banner-button primary" href="#scanner"><span>Test Now</span><i>↗</i></a>
           <a className="banner-button secondary" href="#method"><span>How It Works</span><i>↓</i></a>
         </div>
         <div className="banner-specs" aria-hidden="true">
           <span>REAL-TIME CRAWL</span>
-          <span>47 SIGNALS</span>
+          <span>43 SIGNALS</span>
           <span>14 AI AGENTS</span>
           <span>EVIDENCE LINKED</span>
         </div>
         <div className="banner-coordinate" aria-hidden="true">24.7136° N<br />46.6753° E</div>
       </section>
 
-      <section className="hero audit-stage">
-        <div className="hero-copy">
-          <h1>Your website exists.<br /><em>Does AI know it?</em></h1>
-          <p className="hero-intro">Watch your site become a living signal map. See what AI can reach, understand and confidently cite.</p>
-
-          <form className="audit-form" onSubmit={startScan} id="scanner">
-            <label htmlFor="website-url">Website address</label>
-            <div className="input-shell">
-              <span className="protocol">https://</span>
-              <input
-                id="website-url"
-                value={url}
-                onChange={(event) => setUrl(event.target.value)}
-                placeholder="yourwebsite.com"
-                autoComplete="url"
-                inputMode="url"
-                disabled={running}
-                aria-describedby="audit-note"
-                required
-              />
-              <button type="submit" disabled={running}>
-                <span>{running ? "Observing" : complete ? "Scan again" : "Reveal my footprint"}</span>
-                <b aria-hidden="true">{running ? `${progress}%` : "↗"}</b>
-              </button>
-            </div>
-            <div className="form-note" id="audit-note">
-              <span>No account</span><span>47+ signals</span><span>Evidence attached</span>
-            </div>
-            {auditError && <p className="audit-error" role="alert"><b>Scan stopped</b>{auditError}</p>}
-            {result && <p className="audit-result-note"><b>LIVE CRAWL</b>{result.metrics.pagesScanned} pages sampled in {(result.metrics.durationMs / 1000).toFixed(1)}s. Readiness measures signals—not confirmed citations.</p>}
-          </form>
-        </div>
-
-        <div className={`observatory ${running ? "is-running" : ""} ${complete ? "is-complete" : ""} ${auditError ? "has-error" : ""}`}>
-          <div className="observatory-head">
-            <span>LIVE SIGNAL MAP</span>
-            <span className="system-status"><i /> {running ? "CRAWL ACTIVE" : complete ? "MAP COMPLETE" : auditError ? "SCAN INTERRUPTED" : "SYSTEM READY"}</span>
+      <section className="scanner-strip" id="scanner" aria-label="Run an AI visibility scan">
+        <form className="audit-form" onSubmit={startScan}>
+          <label htmlFor="website-url">Website address</label>
+          <div className="input-shell">
+            <span className="protocol">https://</span>
+            <input
+              id="website-url"
+              value={url}
+              onChange={(event) => setUrl(event.target.value)}
+              placeholder="yourwebsite.com"
+              autoComplete="url"
+              inputMode="url"
+              disabled={running}
+              aria-describedby="audit-note"
+              required
+            />
+            <button type="submit" disabled={running}>
+              <span>{running ? "Observing" : complete ? "Scan again" : "Reveal my footprint"}</span>
+              <b aria-hidden="true">{running ? `${progress}%` : "↗"}</b>
+            </button>
           </div>
-          <ScanGraph phase={phase} running={running} complete={complete} domain={domain} pageNames={pageNames} nodeTones={nodeTones} />
-          <div className="corner-index corner-index-a">A—01</div>
-          <div className="corner-index corner-index-b">{String(Math.max(0, phase + 1)).padStart(2, "0")} / 07</div>
-          <div className="scan-data">
-            <div className="scan-score">
-              <span>Readiness</span>
-              <strong>{complete || running ? score : "—"}<small>/100</small></strong>
+          <div className="form-note" id="audit-note">
+            <span>No account</span><span>43 signals</span><span>Evidence attached</span>
+          </div>
+          {auditError && <p className="audit-error" role="alert"><b>Scan stopped</b>{auditError}</p>}
+          {result && <p className="audit-result-note"><b>LIVE CRAWL</b>{result.metrics.pagesScanned} {result.metrics.pagesScanned === 1 ? "page" : "pages"} sampled in {(result.metrics.durationMs / 1000).toFixed(1)}s. Readiness measures signals—not confirmed citations.</p>}
+        </form>
+      </section>
+
+      {(running || result || auditError) && (
+        <section className="audit-experience" id="audit-experience" aria-live="polite" aria-label="Live audit and result">
+          <div className={`observatory audit-observatory ${running ? "is-running" : result ? "is-complete" : "has-error"}`}>
+            <div className="observatory-head">
+              <span>LIVE SIGNAL MAP / {domain.toUpperCase()}</span>
+              <span className="system-status"><i />{running ? "AUDIT IN PROGRESS" : result ? "EVIDENCE READY" : "SCAN INTERRUPTED"}</span>
             </div>
-            <div className="scan-stage" aria-live="polite">
-              <span>{running ? `PHASE ${String(phase + 1).padStart(2, "0")}` : complete ? `GRADE ${result?.grade ?? "—"} · ${result?.label ?? "AUDIT COMPLETE"}` : auditError ? "AUDIT ERROR" : "AWAITING DOMAIN"}</span>
-              <strong>{running || complete || auditError ? stageLabel || activeStage.label : "Enter a website to begin"}</strong>
-              <small>{running || complete || auditError ? stageMeta || activeStage.meta : "The map will assemble from live crawl evidence"}</small>
-            </div>
-            <div className="scan-progress" aria-hidden="true">
-              <span style={{ width: `${progress}%` }} />
+            <ScanGraph
+              phase={phase}
+              running={running}
+              complete={complete}
+              domain={domain}
+              pageNames={pageNames}
+              nodeTones={nodeTones}
+            />
+            <span className="corner-index corner-index-a">A–01 / DISCOVERY</span>
+            <span className="corner-index corner-index-b">{String(Math.max(0, phase + 1)).padStart(2, "0")} / 07</span>
+            <div className="scan-data">
+              <div className="scan-score">
+                <span>{result ? "Readiness" : "Progress"}</span>
+                <strong>{result?.score ?? progress}<small>/100</small></strong>
+              </div>
+              <div className="scan-stage">
+                <span>{result ? `${result.grade} / ${result.label}` : `Stage ${Math.max(1, phase + 1)} of ${scanStages.length}`}</span>
+                <strong>{stageLabel || activeStage?.label || "Waiting for a website"}</strong>
+                <small>{stageMeta || activeStage?.meta || "Public signals only"}</small>
+              </div>
+              <div className="scan-progress" role="progressbar" aria-label="Audit progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span style={{ width: `${progress}%` }} /></div>
             </div>
           </div>
-        </div>
 
-        <div className="hero-side-note">
-          <span>SCROLL TO TRACE</span>
-          <i />
+          {result && (
+            <div className="result-preview">
+              <div className="result-preview-head">
+                <div>
+                  <p className="lead-line light">LIVE RESULT / {result.domain.toUpperCase()}</p>
+                  <h2>Evidence, not a <span>mystery score.</span></h2>
+                </div>
+                <div className="result-seal" aria-label={`Readiness score ${result.score} out of 100, grade ${result.grade}`}>
+                  <span>{result.grade}</span>
+                  <strong>{result.score}</strong>
+                  <small>{result.label}</small>
+                </div>
+              </div>
+
+              <div className="result-metrics" aria-label="Audit metrics">
+                <div><strong>{result.metrics.pagesScanned}</strong><span>Pages sampled</span></div>
+                <div><strong>{result.metrics.crawlersAllowed}/{result.metrics.crawlersMeasured || "—"}</strong><span>Measured agents allowed</span></div>
+                <div><strong>{result.metrics.answerBlocks}</strong><span>Answer blocks</span></div>
+                <div><strong>{result.metrics.entities}</strong><span>Entities mapped</span></div>
+              </div>
+
+              <div className="result-category-grid">
+                {result.categories.map((category) => (
+                  <article key={category.key}>
+                    <div><span>{category.label}</span><strong>{category.score}</strong></div>
+                    <i aria-hidden="true"><b style={{ width: `${category.score}%` }} /></i>
+                    <p>{category.description}</p>
+                  </article>
+                ))}
+              </div>
+
+              <div className="result-findings">
+                <div className="result-findings-head">
+                  <span>PRIORITY EVIDENCE</span>
+                  <p>{result.findings.filter((finding) => finding.tone !== "good").length} issues need attention</p>
+                </div>
+                {result.findings.slice(0, 4).map((finding) => (
+                  <article className={`finding-row tone-${finding.tone}`} key={finding.code}>
+                    <span>{finding.code}</span>
+                    <div><h3>{finding.label}</h3><p>{finding.evidence}</p></div>
+                    <strong>{finding.value}</strong>
+                  </article>
+                ))}
+              </div>
+
+              <div className="result-actions">
+                <p>This scan measures public citation-readiness signals. It does not claim that an AI platform currently cites the domain.</p>
+                <div>
+                  <a className="result-link secondary" href="#scanner">Run another scan <span>↗</span></a>
+                  <a className="result-link primary" href="/report">Open evidence report <span>↗</span></a>
+                </div>
+              </div>
+            </div>
+          )}
+        </section>
+      )}
+
+      <section className="how-section" id="method">
+        <div className="how-grid-bg" aria-hidden="true" />
+        <div className="section-index light">01 / METHOD</div>
+        <div className="how-copy">
+          <p className="lead-line light">HOW IT WORKS</p>
+          <h2>From invisible site to <span>AI signal.</span></h2>
+          <p>Signal scans how answer engines see your website: whether they can reach it, understand it, trust it and cite it.</p>
+        </div>
+        <div className="how-orbit" aria-hidden="true">
+          <span className="how-index">01</span>
+          <div className="agent-radar">
+            <span className="agent-ring ring-one" />
+            <span className="agent-ring ring-two" />
+            <span className="agent-ring ring-three" />
+            <span className="agent-track track-one"><i /><b>Discover</b></span>
+            <span className="agent-track track-two"><i /><b>Understand</b></span>
+            <span className="agent-track track-three"><i /><b>Trust</b></span>
+            <span className="agent-track track-four"><i /><b>Cite</b></span>
+            <div className="agent-core">
+              <AgentCount />
+              <small>AGENTS</small>
+            </div>
+          </div>
+          <div className="agent-caption">
+            <h3>Crawler access</h3>
+            <p>See which AI agents can reach your knowledge and which bots are blocked before they ever read the page.</p>
+          </div>
+        </div>
+        <div className="how-steps" aria-label="How Signal audits a website">
+          <article>
+            <span>01</span>
+            <h3>Discover</h3>
+            <p>We check crawl paths, robots rules, sitemaps and public access.</p>
+          </article>
+          <article>
+            <span>02</span>
+            <h3>Understand</h3>
+            <p>We read structure, schema, entities and answer-ready passages.</p>
+          </article>
+          <article>
+            <span>03</span>
+            <h3>Trust</h3>
+            <p>We surface proof signals: authors, sources, freshness and authority.</p>
+          </article>
+          <article>
+            <span>04</span>
+            <h3>Cite</h3>
+            <p>We score what AI can confidently choose, summarize and mention.</p>
+          </article>
         </div>
       </section>
 
-      <div className="signal-ticker" aria-hidden="true">
-        <div>
-          <span>DISCOVERY</span><b>✦</b><span>CRAWL ACCESS</span><b>✦</b><span>ENTITY CONFIDENCE</span><b>✦</b><span>CITATION READINESS</span><b>✦</b><span>OBSERVED VISIBILITY</span><b>✦</b>
-          <span>DISCOVERY</span><b>✦</b><span>CRAWL ACCESS</span><b>✦</b><span>ENTITY CONFIDENCE</span><b>✦</b><span>CITATION READINESS</span><b>✦</b><span>OBSERVED VISIBILITY</span><b>✦</b>
-        </div>
-      </div>
-
-      <section className="manifesto" id="method">
-        <div className="section-index">01 / METHOD</div>
-        <div className="manifesto-body">
-          <p className="lead-line">Most audits hand you a score.</p>
-          <h2>We show you the <em>journey</em> from page to answer.</h2>
-          <div className="manifesto-grid">
-            <p>Signal traces how machines discover, parse and evaluate your knowledge. Every score links back to visible evidence—not a black box.</p>
-            <div className="method-diagram" aria-label="The audit moves from discovery through understanding to citation">
-              <div><span>01</span><strong>Discover</strong><small>Can AI reach it?</small></div>
-              <i>→</i>
-              <div><span>02</span><strong>Understand</strong><small>Can AI parse it?</small></div>
-              <i>→</i>
-              <div><span>03</span><strong>Trust</strong><small>Can AI verify it?</small></div>
-              <i>→</i>
-              <div><span>04</span><strong>Cite</strong><small>Will AI choose it?</small></div>
-            </div>
+      <section className="pricing-section" id="pricing">
+        <div className="pricing-head">
+          <div className="section-index light">02 / PRICING</div>
+          <div>
+            <p className="lead-line light">PRICING</p>
+            <h2>Start free.<br />Scale when <span>ready.</span></h2>
+            <p>See the evidence report during private beta. Paid platform testing, competitor gaps and the 90-day action plan open next phase.</p>
           </div>
+        </div>
+        <div className="pricing-grid">
+          <article className="price-card">
+            <span className="price-label">Free Score</span>
+            <h3>$0</h3>
+            <p>No card required</p>
+            <ul>
+              <li>Website crawl and GEO score</li>
+              <li>AI crawler access check</li>
+              <li>Six-category visibility snapshot</li>
+              <li>Critical fixes preview</li>
+            </ul>
+            <a href="#scanner">Run free score <span>↗</span></a>
+          </article>
+          <article className="price-card featured">
+            <div className="popular-badge">Most popular</div>
+            <span className="price-label">Full Audit</span>
+            <h3>$19.99</h3>
+            <p>Payment opens next phase</p>
+            <ul>
+              <li>Everything in Free</li>
+              <li>Platform-by-platform prompt and citation tests</li>
+              <li>Competitor visibility and entity gap analysis</li>
+              <li>Crawler audit for GPTBot, ClaudeBot and more</li>
+              <li>Evidence-linked fixes prioritized by impact</li>
+              <li>Copy-ready schema, answer blocks and 90-day roadmap</li>
+            </ul>
+            <a href="#scanner">Preview the full report <span>↗</span></a>
+          </article>
+          <article className="price-card consult">
+            <span className="price-label">Done-For-You</span>
+            <h3>$2,000<small>+</small></h3>
+            <p>Plus monthly monitoring</p>
+            <ul>
+              <li>Complete GEO website upgrade</li>
+              <li>Schema, llms.txt and technical fixes</li>
+              <li>Answer-first content rewrites</li>
+              <li>Continuous monitoring and reporting</li>
+              <li>Priority support</li>
+            </ul>
+            <small className="price-note">Final quote depends on scope and site complexity.</small>
+            <a href="/contact">Book consultation <span>↗</span></a>
+          </article>
         </div>
       </section>
 
       <section className="signals-section" id="signals">
         <div className="section-heading">
-          <div className="section-index">02 / SIGNALS</div>
-          <h2>Evidence over<br /><em>vanity metrics.</em></h2>
+          <div className="section-index">03 / SIGNALS</div>
+          <h2>Evidence over<br /><span>vanity metrics.</span></h2>
           <p>Three views into the invisible systems deciding who becomes the answer.</p>
         </div>
         <div className="signal-card-grid">
@@ -631,53 +760,39 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="evidence-section" id="evidence">
-        <div className="evidence-copy">
-          <div className="section-index light">03 / EVIDENCE</div>
-          <h2>Never wonder<br /><em>why.</em></h2>
-          <p>Open any score to see the page, rule and passage behind it. Then ship the fix without translating a 60-page PDF.</p>
-          <a href="#top">Explore a live report <span>↗</span></a>
+      <section className="landing-faq-section" id="faq">
+        <div className="landing-faq-head">
+          <div className="section-index light">04 / FAQ</div>
+          <div>
+            <p className="lead-line light">FAQ</p>
+            <h2>Questions before<br /><span>AI answers.</span></h2>
+            <p>The quick version: what we scan, what it means and what happens after your website becomes visible.</p>
+          </div>
         </div>
-
-        <div className="evidence-console">
-          <div className="console-bar">
-            <span>signal://audit/{result?.domain ?? "sample.com"}</span>
-            <div><i /><i /><i /></div>
-          </div>
-          <div className="console-summary">
-            <div className="console-score"><small>AI READINESS</small><strong>{result ? score : 82}</strong><span>{result ? `${100 - result.score} pts opportunity · grade ${result.grade}` : "↑ 14 pts opportunity"}</span></div>
-            <div className="fingerprint" aria-hidden="true">
-              {fingerprintBars.map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}
-            </div>
-          </div>
-          <div className="finding-list">
-            {activeFindings.map((finding) => (
-              <div className={`finding-shell ${selectedFinding === finding.code ? "is-open" : ""}`} key={finding.code}>
-                <div className="finding">
-                  <span>{finding.code}</span>
-                  <strong>{finding.label}</strong>
-                  <em className={finding.tone}>{finding.value}</em>
-                  <button type="button" aria-expanded={selectedFinding === finding.code} aria-label={`Open evidence for ${finding.label}`} onClick={() => setSelectedFinding((current) => current === finding.code ? null : finding.code)}>↗</button>
-                </div>
-                {selectedFinding === finding.code && <div className="finding-evidence"><span>EVIDENCE</span><p>{finding.evidence}</p><strong>NEXT ACTION</strong><p>{finding.action}</p></div>}
-              </div>
-            ))}
-          </div>
-          <div className="console-foot"><span>{result?.metrics.signalsChecked ?? 47} SIGNALS CHECKED</span><span>{activeFindings.filter((finding) => finding.tone !== "good").length} PRIORITY ACTIONS</span><span>{result?.metrics.pagesScanned ?? 6} PAGES SAMPLED</span></div>
+        <div className="landing-faq-grid">
+          {landingFaqs.map((faq, index) => (
+            <article className="landing-faq-card" key={faq.question}>
+              <span>{String(index + 1).padStart(2, "0")}</span>
+              <h3>{faq.question}</h3>
+              <p>{faq.answer}</p>
+              <i aria-hidden="true">↗</i>
+            </article>
+          ))}
         </div>
+        <a className="landing-faq-link" href="/faq">Read full FAQ <span>↗</span></a>
       </section>
 
       <section className="closing-section">
         <div className="closing-orbit" aria-hidden="true"><i /><i /><i /><span>S°</span></div>
         <p>THE ANSWER IS ALREADY BEING CHOSEN.</p>
-        <h2>Make sure it’s <em>you.</em></h2>
+        <h2>Make sure it’s <span>you.</span></h2>
         <a href="#scanner">Reveal your AI footprint <span>↗</span></a>
       </section>
 
       <footer>
         <a className="brand footer-brand" href="#top"><span className="brand-mark"><i /><i /><i /></span><span>SIGNAL<span className="brand-dot">°</span></span></a>
         <p>AI visibility, made observable.</p>
-        <div><a href="#method">Method</a><a href="#signals">Signals</a><a href="#evidence">Evidence</a></div>
+        <div><a href="#method">Method</a><a href="#pricing">Pricing</a><a href="/faq">FAQ</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div>
         <span>© 2026 SIGNAL OBSERVATORY</span>
       </footer>
     </main>

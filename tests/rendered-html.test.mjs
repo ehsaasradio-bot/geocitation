@@ -34,9 +34,13 @@ test("server-renders the Signal observatory", async () => {
   assert.match(html, /SEE WHAT AI CAN FIND\. FIX WHAT IT CAN’T\./);
   assert.match(html, />Test Now</);
   assert.match(html, />How It Works</);
-  assert.match(html, /Your website exists/);
+  assert.match(html, /YOUR WEBSITE EXISTS\. DOES AI KNOW IT\?/);
   assert.match(html, /Reveal my footprint/);
-  assert.match(html, /LIVE SIGNAL MAP/);
+  assert.match(html, /HOW IT WORKS/);
+  assert.match(html, /From invisible site to/);
+  assert.match(html, /43 SIGNALS/);
+  assert.match(html, /Preview the full report/);
+  assert.doesNotMatch(html, /LIVE SIGNAL MAP/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
 });
 
@@ -90,9 +94,83 @@ test("streams ordered live audit events and an evidence-backed result", async ()
     const result = JSON.parse(resultData);
     assert.equal(result.domain, "example.com");
     assert.equal(result.metrics.crawlerTotal, 14);
+    assert.equal(result.metrics.crawlersMeasured, 14);
+    assert.equal(result.metrics.signalsChecked, 43);
+    assert.equal(result.categories.reduce((sum, category) => sum + category.weight, 0), 100);
+    assert.equal(result.resources.length, 3);
+    assert.equal(result.crawlerAccess.some((crawler) => crawler.purpose === "user_retrieval"), true);
+    assert.equal(result.pages.some((page) => page.url.includes("/about")), true);
     assert.equal(result.methodology.includes("does not claim"), true);
+    assert.equal(result.methodology.includes("source-HTML"), true);
     assert.equal(Array.isArray(result.findings), true);
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+test("server-renders the full public information and report routes", async () => {
+  const worker = await loadWorker("public-routes");
+  const expected = new Map([
+    ["/about", /We make invisible AI visibility visible/],
+    ["/accessibility", /Readable signals for everyone/],
+    ["/contact", /Project intake opens next phase/],
+    ["/faq", /Questions answer engines would ask/],
+    ["/methodology", /A score you can inspect/],
+    ["/privacy", /Report storage/],
+    ["/report", /ASSEMBLING EVIDENCE REPORT/],
+    ["/terms", /Pre-payment release/],
+  ]);
+
+  for (const [path, pattern] of expected) {
+    const response = await worker.fetch(new Request(`http://localhost${path}`, { headers: { accept: "text/html" } }), env, ctx);
+    assert.equal(response.status, 200, `${path} should render`);
+    assert.match(await response.text(), pattern);
+  }
+});
+
+test("reports crawler policy as unknown when robots cannot be verified", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input) => {
+    const url = new URL(input instanceof Request ? input.url : String(input));
+    if (url.pathname === "/robots.txt") return new Response("Unavailable", { status: 503, headers: { "content-type": "text/plain" } });
+    if (url.pathname === "/sitemap.xml" || url.pathname === "/llms.txt") return new Response("Not found", { status: 404, headers: { "content-type": "text/plain" } });
+    return new Response("<!doctype html><html lang=\"en\"><head><title>Unknown Policy</title><meta name=\"description\" content=\"A public example website.\"><meta name=\"viewport\" content=\"width=device-width\"></head><body><h1>Unknown policy</h1><p>This public page contains enough descriptive content to complete a bounded source HTML audit while the crawler policy endpoint remains unavailable for verification by the service.</p></body></html>", { status: 200, headers: { "content-type": "text/html" } });
+  };
+
+  try {
+    const worker = await loadWorker("unknown-robots");
+    const response = await worker.fetch(new Request("http://localhost/api/audit", {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "text/event-stream" },
+      body: JSON.stringify({ url: "https://example.com" }),
+    }), env, ctx);
+    const body = await response.text();
+    const resultData = body.match(/event: result\ndata: (.+)/)?.[1];
+    assert.ok(resultData);
+    const result = JSON.parse(resultData);
+    assert.equal(result.metrics.crawlersAllowed, 0);
+    assert.equal(result.metrics.crawlersMeasured, 0);
+    assert.equal(result.crawlerAccess.every((crawler) => crawler.state === "unknown"), true);
+    assert.equal(result.findings.some((finding) => finding.value === "Policy unknown"), true);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test("rejects cross-origin and oversized audit requests", async () => {
+  const worker = await loadWorker("request-boundaries");
+  const crossOrigin = await worker.fetch(new Request("http://localhost/api/audit", {
+    method: "POST",
+    headers: { "content-type": "application/json", origin: "https://attacker.example" },
+    body: JSON.stringify({ url: "https://example.com" }),
+  }), env, ctx);
+  assert.equal(crossOrigin.status, 403);
+
+  const oversized = await worker.fetch(new Request("http://localhost/api/audit", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ url: `https://example.com/${"a".repeat(5_000)}` }),
+  }), env, ctx);
+  assert.equal(oversized.status, 400);
+  assert.match((await oversized.json()).error, /too large/i);
 });

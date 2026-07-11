@@ -1,0 +1,16 @@
+# AI SIGNAL°
+
+AI SIGNAL° is an evidence-backed website audit for public AI discoverability and citation readiness.
+
+## Canonical pages
+
+- [Home and live audit](https://signal-observatory.syedmubashirhaq.chatgpt.site/)
+- [Methodology](https://signal-observatory.syedmubashirhaq.chatgpt.site/methodology)
+- [Frequently asked questions](https://signal-observatory.syedmubashirhaq.chatgpt.site/faq)
+- [About AI SIGNAL°](https://signal-observatory.syedmubashirhaq.chatgpt.site/about)
+- [Privacy policy](https://signal-observatory.syedmubashirhaq.chatgpt.site/privacy)
+- [Terms of service](https://signal-observatory.syedmubashirhaq.chatgpt.site/terms)
+
+## Product boundaries
+
+The live audit evaluates source HTML and public technical resources such as robots.txt, sitemap.xml, JSON-LD and llms.txt. It reports citation-readiness signals and does not claim that an AI platform currently cites a submitted website.
