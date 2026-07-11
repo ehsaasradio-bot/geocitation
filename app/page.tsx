@@ -327,6 +327,8 @@ export default function Home() {
   const [stageMeta, setStageMeta] = useState("");
   const [auditError, setAuditError] = useState("");
   const [result, setResult] = useState<AuditResult | null>(null);
+  const [saveState, setSaveState] = useState<"idle" | "saving" | "saved" | "signin" | "error">("idle");
+  const [savedReportId, setSavedReportId] = useState("");
   const scanAbortRef = useRef<AbortController | null>(null);
   const runTokenRef = useRef(0);
 
@@ -339,6 +341,20 @@ export default function Home() {
     } catch {
       // The live result still works when browser storage is unavailable.
     }
+    void fetch("/api/reports", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(result),
+    }).then(async (response) => {
+      if (response.status === 401) {
+        setSaveState("signin");
+        return;
+      }
+      if (!response.ok) throw new Error("save failed");
+      const payload = await response.json() as { id: string };
+      setSavedReportId(payload.id);
+      setSaveState("saved");
+    }).catch(() => setSaveState("error"));
   }, [result]);
 
   const startScan = async (event: FormEvent<HTMLFormElement>) => {
@@ -357,6 +373,8 @@ export default function Home() {
     setPhase(0);
     setProgress(3);
     setResult(null);
+    setSaveState("idle");
+    setSavedReportId("");
     setAuditError("");
     setStageLabel(scanStages[0].label);
     setStageMeta(`Connecting to ${normalized}`);
@@ -417,6 +435,7 @@ export default function Home() {
           if (eventName === "result") {
             const audit = payload as unknown as AuditResult;
             receivedResult = true;
+            setSaveState("saving");
             setDomain(audit.domain);
             setResult(audit);
             setPhase(scanStages.length - 1);
@@ -477,10 +496,11 @@ export default function Home() {
           <a href="/faq">FAQ</a>
           <a href="/about">About</a>
           <a href="/contact">Contact</a>
+          <a href="/account">My reports</a>
         </nav>
         <details className="mobile-menu">
           <summary>Menu</summary>
-          <div><a href="#method">Method</a><a href="#pricing">Pricing</a><a href="/faq">FAQ</a><a href="/about">About</a><a href="/contact">Contact</a><a href="#scanner">Run an audit</a></div>
+          <div><a href="#method">Method</a><a href="#pricing">Pricing</a><a href="/faq">FAQ</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/account">My reports</a><a href="#scanner">Run an audit</a></div>
         </details>
         <a className="header-cta" href="#scanner">Run an audit <span>↗</span></a>
       </header>
@@ -537,7 +557,7 @@ export default function Home() {
             </button>
           </div>
           <div className="form-note" id="audit-note">
-            <span>No account</span><span>43 signals</span><span>Evidence attached</span><span>Protected limits</span>
+            <span>No account required</span><span>43 signals</span><span>Evidence attached</span><span>Protected limits</span>
           </div>
           {auditError && <p className="audit-error" role="alert"><b>Scan stopped</b>{auditError}</p>}
           {result && <p className="audit-result-note"><b>LIVE CRAWL</b>{result.metrics.pagesScanned} {result.metrics.pagesScanned === 1 ? "page" : "pages"} sampled in {(result.metrics.durationMs / 1000).toFixed(1)}s. Readiness measures signals—not confirmed citations.</p>}
@@ -621,10 +641,10 @@ export default function Home() {
               </div>
 
               <div className="result-actions">
-                <p>This scan measures public citation-readiness signals. It does not claim that an AI platform currently cites the domain.</p>
+                <p>This scan measures public citation-readiness signals. {saveState === "saving" && "Saving to your private history…"}{saveState === "saved" && "Saved to your private history."}{saveState === "signin" && <><a href="/account">Sign in with ChatGPT</a> to save this and future reports.</>}{saveState === "error" && "The report remains available on this device, but could not be saved to your account."}</p>
                 <div>
                   <a className="result-link secondary" href="#scanner">Run another scan <span>↗</span></a>
-                  <a className="result-link primary" href="/report">Open evidence report <span>↗</span></a>
+                  <a className="result-link primary" href={savedReportId ? `/report?id=${savedReportId}` : "/report"}>Open evidence report <span>↗</span></a>
                 </div>
               </div>
             </div>

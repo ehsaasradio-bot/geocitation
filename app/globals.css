@@ -494,6 +494,39 @@ footer > div a:hover { color: var(--signal); }
 .report-empty h1 { max-width: 1200px; font-size: clamp(62px,9vw,154px); }
 .report-empty section > p:not(.lead-line) { max-width: 620px; margin: 36px 0; color: rgba(241,238,229,.56); font-size: 16px; line-height: 1.65; }
 .report-empty section > a { width: 230px; height: 56px; border-radius: 999px; padding: 0 19px; display: flex; align-items: center; justify-content: space-between; color: var(--ink); background: var(--signal); font: 700 9px var(--font-geist-mono),monospace; letter-spacing: .08em; text-transform: uppercase; }
+.result-actions > p a { color: var(--signal); text-decoration: underline; text-underline-offset: 3px; }
+.account-page { min-height: 100vh; background: #070908; color: var(--paper); }
+.account-nav { height: 86px; display: flex; align-items: center; justify-content: space-between; padding: 0 3.25vw; border-bottom: 1px solid var(--line); }
+.account-nav > div { display: flex; align-items: center; gap: 18px; color: rgba(241,238,229,.5); font: 650 9px var(--font-geist-mono),monospace; letter-spacing: .09em; text-transform: uppercase; }
+.account-nav > div a { padding: 11px 15px; border: 1px solid rgba(241,238,229,.25); border-radius: 999px; color: var(--paper); }
+.account-hero { min-height: 650px; padding: 105px 3.25vw 75px; border-bottom: 1px solid var(--line); background: radial-gradient(circle at 78% 42%,rgba(201,255,71,.11),transparent 26%),linear-gradient(rgba(241,238,229,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(241,238,229,.025) 1px,transparent 1px),#070908; background-size: auto,56px 56px,56px 56px,auto; }
+.account-hero h1 { max-width: 1200px; font-size: clamp(72px,10.5vw,180px); line-height: .83; }
+.account-hero h1 span { color: var(--signal); }
+.account-hero > p:not(.lead-line) { max-width: 650px; margin: 36px 0; color: rgba(241,238,229,.58); font-size: 16px; line-height: 1.65; }
+.account-hero > a { width: 215px; height: 54px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; border-radius: 999px; background: var(--signal); color: var(--ink); font: 700 9px var(--font-geist-mono),monospace; letter-spacing: .09em; text-transform: uppercase; }
+.account-history { min-height: 600px; padding: 105px 3.25vw 130px; }
+.account-history-head { display: grid; grid-template-columns: 18% 1fr; align-items: start; margin-bottom: 62px; }
+.account-history-head > span { padding-top: 10px; color: rgba(241,238,229,.4); font: 650 9px var(--font-geist-mono),monospace; letter-spacing: .14em; }
+.account-history-head h2 { font-size: clamp(64px,8vw,136px); }
+.account-history-head h2 span { color: var(--signal); }
+.account-loading { min-height: 220px; display: flex; align-items: center; gap: 18px; color: rgba(241,238,229,.45); font: 650 9px var(--font-geist-mono),monospace; letter-spacing: .13em; }
+.account-loading .live-dot { display: inline-block; }
+.account-error,.account-empty { padding: 45px; border: 1px solid var(--line); color: rgba(241,238,229,.58); }
+.account-empty strong { color: var(--signal); font: 650 10px var(--font-geist-mono),monospace; letter-spacing: .13em; }
+.account-empty p { margin: 24px 0; }
+.account-empty a { color: var(--signal); }
+.account-report-list { border-top: 1px solid var(--line); }
+.account-report-head,.account-report-list article { display: grid; grid-template-columns: minmax(230px,1.3fr) minmax(170px,.8fr) 80px 90px minmax(220px,.8fr); gap: 24px; align-items: center; }
+.account-report-head { min-height: 52px; color: rgba(241,238,229,.35); font: 650 8px var(--font-geist-mono),monospace; letter-spacing: .13em; text-transform: uppercase; }
+.account-report-list article { min-height: 145px; border-top: 1px solid var(--line); }
+.account-report-list article > div:first-child { display: flex; flex-direction: column; gap: 10px; }
+.account-report-list article > div:first-child strong { font-size: 28px; font-weight: 520; letter-spacing: -.04em; overflow-wrap: anywhere; }
+.account-report-list article > div:first-child a,.account-report-list time { color: rgba(241,238,229,.45); font: 600 9px var(--font-geist-mono),monospace; text-transform: uppercase; letter-spacing: .08em; }
+.account-report-list article > b { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; background: var(--signal); color: var(--ink); }
+.account-report-list article > em { color: var(--signal); font-size: 54px; font-weight: 520; letter-spacing: -.08em; }
+.account-row-actions { display: flex; gap: 9px; justify-content: flex-end; }
+.account-row-actions a,.account-row-actions button { min-height: 42px; padding: 0 14px; display: flex; align-items: center; border: 1px solid rgba(241,238,229,.24); background: transparent; color: var(--paper); cursor: pointer; font: 650 8px var(--font-geist-mono),monospace; letter-spacing: .08em; text-transform: uppercase; }
+.account-row-actions a { background: var(--paper); color: var(--ink); }
 
 @media (max-width: 1680px) {
   .banner-copy { font-size: 82px; }
@@ -719,6 +752,14 @@ footer > div a:hover { color: var(--signal); }
   .report-upgrade > div > p:not(.lead-line) { font-size: 14px; }
   .report-empty > section { padding: 130px 18px 60px; }
   .report-empty h1 { font-size: 56px; }
+  .account-nav { height: 74px; padding: 0 18px; }
+  .account-nav > div > span { display: none; }
+  .account-hero { min-height: 620px; padding: 110px 18px 70px; }
+  .account-hero h1 { font-size: 62px; }
+  .account-history { padding: 76px 18px 90px; overflow-x: auto; }
+  .account-history-head { grid-template-columns: 1fr; gap: 28px; }
+  .account-history-head h2 { font-size: 58px; }
+  .account-report-list { min-width: 760px; }
   .closing-section { min-height: 760px; }
   .closing-section h2 { font-size: 66px; }
   footer { grid-template-columns: 1fr; padding: 40px 18px; }

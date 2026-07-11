@@ -8,6 +8,13 @@
       "when": 1783798923498,
       "tag": "0000_puzzling_fantastic_four",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1783799845326,
+      "tag": "0001_warm_rafael_vega",
+      "breakpoints": true
     }
   ]
 }

@@ -6,11 +6,12 @@ AI SIGNAL° is a live website observatory for public AI discoverability and cita
 
 - Live streamed audit at `/api/audit`
 - Evidence summary on the landing page
-- Device-local full report at `/report`
+- Full evidence report at `/report`, with durable account-owned copies for signed-in users
+- ChatGPT sign-in and private audit history at `/account`
 - Methodology, FAQ, about, contact, privacy, terms, and accessibility pages
 - Public `robots.txt`, `sitemap.xml`, `llms.txt`, and JSON-LD
 
-The current pre-payment release stores the latest report in browser storage. Checkout, persistent customer reports, model-specific prompt testing, and generated PDF delivery are reserved for the next phase.
+The current pre-payment release keeps the latest report in browser storage for anonymous visitors and saves reports durably for signed-in users. Checkout, model-specific prompt testing, and generated PDF delivery remain reserved for later phases.
 
 Phase 1 production protection uses D1-backed salted rate-limit identifiers, bounded crawl budgets, same-origin request enforcement and centralized security headers.
 

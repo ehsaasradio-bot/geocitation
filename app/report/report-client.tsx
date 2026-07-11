@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
 import { AUDIT_STORAGE_KEY, type AuditResult, type AuditTone } from "../audit-types";
 
 function formatDate(value: string) {
@@ -41,9 +41,21 @@ function getServerAudit() {
   return undefined;
 }
 
+function subscribeToLocation() {
+  return () => undefined;
+}
+
+function getReportId() {
+  return new URLSearchParams(window.location.search).get("id") ?? "";
+}
+
+function getServerReportId() {
+  return "";
+}
+
 export function ReportClient() {
   const storedAudit = useSyncExternalStore(subscribeToStoredAudit, getStoredAudit, getServerAudit);
-  const result = useMemo<AuditResult | null | undefined>(() => {
+  const localResult = useMemo<AuditResult | null | undefined>(() => {
     if (storedAudit === undefined) return undefined;
     if (!storedAudit) return null;
     try {
@@ -52,6 +64,19 @@ export function ReportClient() {
       return null;
     }
   }, [storedAudit]);
+  const [remoteResult, setRemoteResult] = useState<AuditResult | null | undefined>(undefined);
+  const reportId = useSyncExternalStore(subscribeToLocation, getReportId, getServerReportId);
+  const remoteMode = Boolean(reportId);
+
+  useEffect(() => {
+    if (!reportId) return;
+    void fetch(`/api/reports/${encodeURIComponent(reportId)}`, { cache: "no-store" })
+      .then(async (response) => response.ok ? response.json() as Promise<{ report: AuditResult }> : Promise.reject(new Error("Report unavailable")))
+      .then((payload) => setRemoteResult(payload.report))
+      .catch(() => setRemoteResult(null));
+  }, [reportId]);
+
+  const result = remoteMode ? remoteResult : localResult;
 
   if (result === undefined) {
     return <main className="report-page report-loading" id="main-content"><span className="live-dot" /><p>ASSEMBLING EVIDENCE REPORT</p></main>;
@@ -62,12 +87,12 @@ export function ReportClient() {
       <main className="report-page report-empty" id="main-content">
         <header className="report-nav">
           <Link className="brand" href="/"><span className="brand-mark"><i /><i /><i /></span><span>SIGNAL<span className="brand-dot">°</span></span></Link>
-          <Link className="header-cta" href="/#scanner">Run an audit <span>↗</span></Link>
+          <Link className="header-cta" href="/account">Saved reports <span>↗</span></Link>
         </header>
         <section>
           <p className="lead-line light">NO EVIDENCE LOADED</p>
           <h1>Run a website scan to build your report.</h1>
-          <p>Reports are created from a live crawl and kept on this device until persistent accounts are added in the payment phase.</p>
+          <p>{remoteMode ? "This report is unavailable or does not belong to the signed-in account." : "Reports are created from a live crawl. Sign in to keep every audit safely in your private history."}</p>
           <Link href="/#scanner">Start a live scan <span>↗</span></Link>
         </section>
       </main>
@@ -89,6 +114,7 @@ export function ReportClient() {
           <a href="#evidence">Evidence</a>
           <a href="#crawlers">Crawlers</a>
           <a href="#pages">Pages</a>
+          <Link href="/account">History</Link>
         </nav>
         <button className="report-print" type="button" onClick={() => window.print()}>Save / print <span>↗</span></button>
       </header>

@@ -69,8 +69,21 @@ test("server-renders the Signal observatory", async () => {
   assert.match(html, /From invisible site to/);
   assert.match(html, /43 SIGNALS/);
   assert.match(html, /Preview the full report/);
+  assert.match(html, /My reports/);
   assert.doesNotMatch(html, /LIVE SIGNAL MAP/);
   assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
+});
+
+test("keeps saved report data behind sign-in", async () => {
+  const worker = await loadWorker("private-reports");
+  const response = await worker.fetch(new Request("http://localhost/api/reports", {
+    headers: { accept: "application/json" },
+  }), env, ctx);
+
+  assert.equal(response.status, 401);
+  assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow");
+  const payload = await response.json();
+  assert.match(payload.error, /Sign in/i);
 });
 
 test("rejects private and local audit targets before streaming", async () => {
