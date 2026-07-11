@@ -73,6 +73,10 @@ h1 em, h2 em { font-family: "Iowan Old Style", "Baskerville", Georgia, serif; fo
 .input-shell button b { font: 600 12px var(--font-geist-mono), monospace; }
 .form-note { display: flex; gap: 26px; margin-top: 12px; color: rgba(241,238,229,.42); font: 9px var(--font-geist-mono), monospace; text-transform: uppercase; letter-spacing: .1em; }
 .form-note span::before { content: "✓"; color: var(--signal); margin-right: 7px; }
+.audit-error,.audit-result-note { margin: 16px 0 0; padding: 12px 14px; border-left: 2px solid var(--coral); background: rgba(255,107,97,.07); color: rgba(241,238,229,.66); font: 9px/1.55 var(--font-geist-mono), monospace; }
+.audit-error b,.audit-result-note b { display: inline-block; color: var(--coral); margin-right: 11px; letter-spacing: .1em; font-size: 8px; }
+.audit-result-note { border-left-color: var(--signal); background: rgba(201,255,71,.055); }
+.audit-result-note b { color: var(--signal); }
 
 .observatory { min-height: calc(100vh - 90px); position: relative; overflow: hidden; background: radial-gradient(circle at 56% 48%,rgba(89,103,255,.06),transparent 40%),#070908; }
 .observatory::after { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px); background-size: 100% 4px; mix-blend-mode: screen; opacity: .3; }
@@ -83,6 +87,8 @@ h1 em, h2 em { font-family: "Iowan Old Style", "Baskerville", Georgia, serif; fo
 .is-running .system-status i { background: var(--signal); box-shadow: 0 0 12px var(--signal); animation: livePulse 1.2s ease-in-out infinite; }
 .is-complete .system-status { color: var(--signal); }
 .is-complete .system-status i { background: var(--signal); }
+.has-error .system-status { color: var(--coral); }
+.has-error .system-status i { background: var(--coral); box-shadow: 0 0 12px rgba(255,107,97,.5); }
 .scan-canvas { width: 100%; height: 76%; position: absolute; inset: 4% 0 auto; touch-action: pan-y; }
 .corner-index { position: absolute; font: 8px var(--font-geist-mono), monospace; color: rgba(241,238,229,.28); letter-spacing: .12em; }
 .corner-index-a { left: 31px; top: 50%; transform: rotate(-90deg); transform-origin: left; }
@@ -174,7 +180,9 @@ h1 em, h2 em { font-family: "Iowan Old Style", "Baskerville", Georgia, serif; fo
 .fingerprint i:nth-child(2n) { animation-delay: -.8s; }
 .fingerprint i:nth-child(3n) { animation-delay: -1.4s; }
 @keyframes fingerprint { to { filter: brightness(1.35); transform: scaleY(.93); transform-origin: bottom; } }
-.finding { min-height: 57px; display: grid; grid-template-columns: 85px 1fr auto 28px; align-items: center; gap: 15px; padding: 0 20px; border-bottom: 1px solid var(--line); font-size: 10px; }
+.finding-shell { border-bottom: 1px solid var(--line); }
+.finding { min-height: 57px; display: grid; grid-template-columns: 85px 1fr auto 28px; align-items: center; gap: 15px; padding: 0 20px; font-size: 10px; transition: background .25s ease; }
+.finding-shell.is-open .finding { background: rgba(201,255,71,.035); }
 .finding > span { font: 8px var(--font-geist-mono), monospace; color: rgba(241,238,229,.34); }
 .finding strong { font-weight: 480; }
 .finding em { font-style: normal; font: 8px var(--font-geist-mono), monospace; text-transform: uppercase; letter-spacing: .08em; }
@@ -183,6 +191,12 @@ h1 em, h2 em { font-family: "Iowan Old Style", "Baskerville", Georgia, serif; fo
 .finding em.bad { color: var(--coral); }
 .finding button { width: 27px; height: 27px; border: 1px solid var(--line); background: transparent; color: var(--paper); border-radius: 50%; cursor: pointer; transition: background .25s ease,color .25s ease; }
 .finding button:hover { background: var(--signal); color: var(--ink); }
+.finding-shell.is-open .finding button { transform: rotate(135deg); background: var(--signal); color: var(--ink); }
+.finding-evidence { padding: 16px 20px 19px 120px; border-top: 1px solid rgba(241,238,229,.07); background: rgba(255,255,255,.018); animation: evidenceIn .28s ease both; }
+.finding-evidence > span,.finding-evidence > strong { display: block; color: var(--signal); font: 600 7px var(--font-geist-mono), monospace; letter-spacing: .13em; }
+.finding-evidence > strong { margin-top: 13px; color: rgba(241,238,229,.42); }
+.finding-evidence p { margin: 5px 0 0; color: rgba(241,238,229,.58); font-size: 9px; line-height: 1.55; }
+@keyframes evidenceIn { from { opacity: 0; transform: translateY(-5px); } }
 .console-foot { height: 46px; display: flex; align-items: center; justify-content: space-between; padding: 0 20px; font: 7px var(--font-geist-mono), monospace; color: rgba(241,238,229,.35); letter-spacing: .11em; }
 
 .closing-section { min-height: 94vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; position: relative; overflow: hidden; padding: 110px 20px; }
@@ -254,6 +268,7 @@ footer > div a:hover { color: var(--signal); }
   .fingerprint { padding-left: 15px; }
   .finding { grid-template-columns: 70px 1fr auto; padding: 0 13px; gap: 8px; }
   .finding button { display: none; }
+  .finding-evidence { display: none; }
   .console-foot { display: none; }
   .closing-section { min-height: 760px; }
   .closing-section h2 { font-size: 66px; }

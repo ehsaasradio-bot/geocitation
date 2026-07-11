@@ -1,87 +1,94 @@
 import assert from "node:assert/strict";
-import { access, readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
-const developmentPreviewMeta =
-  /<meta(?=[^>]*\bname=["']codex-preview["'])(?=[^>]*\bcontent=["']development["'])[^>]*>/i;
-const templateRoot = new URL("../", import.meta.url);
-const previewRoot = new URL("../app/_sites-preview/", import.meta.url);
-
-async function render() {
+async function loadWorker(label) {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
-  workerUrl.searchParams.set("test", `${process.pid}-${Date.now()}`);
+  workerUrl.searchParams.set("test", `${label}-${process.pid}-${Date.now()}`);
   const { default: worker } = await import(workerUrl.href);
-
-  return worker.fetch(
-    new Request("http://localhost/", {
-      headers: { accept: "text/html" },
-    }),
-    {
-      ASSETS: {
-        fetch: async () => new Response("Not found", { status: 404 }),
-      },
-    },
-    {
-      waitUntil() {},
-      passThroughOnException() {},
-    },
-  );
+  return worker;
 }
 
-test("server-renders the starter loading skeleton", async () => {
-  const response = await render();
+const env = {
+  ASSETS: {
+    fetch: async () => new Response("Not found", { status: 404 }),
+  },
+};
+
+const ctx = {
+  waitUntil() {},
+  passThroughOnException() {},
+};
+
+test("server-renders the Signal observatory", async () => {
+  const worker = await loadWorker("page");
+  const response = await worker.fetch(new Request("http://localhost/", {
+    headers: { accept: "text/html" },
+  }), env, ctx);
+
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, developmentPreviewMeta);
-  assert.match(html, /<title>Your site is taking shape<\/title>/i);
-  assert.match(html, /Codex is working/);
-  assert.match(html, /Your site is taking shape/);
-  assert.match(html, /Codex is building the first version/);
-  assert.match(html, /react-loading-skeleton/);
-  assert.match(html, /role="status"/);
+  assert.match(html, /SIGNAL°/);
+  assert.match(html, /Your website exists/);
+  assert.match(html, /Reveal my footprint/);
+  assert.match(html, /LIVE SIGNAL MAP/);
+  assert.doesNotMatch(html, /codex-preview|Your site is taking shape|react-loading-skeleton/i);
 });
 
-test("keeps the loading skeleton scoped and disposable", async () => {
-  const [preview, css, page, layout, packageJson, files] = await Promise.all([
-    readFile(new URL("SkeletonPreview.tsx", previewRoot), "utf8"),
-    readFile(new URL("preview.css", previewRoot), "utf8"),
-    readFile(new URL("../app/page.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../app/layout.tsx", import.meta.url), "utf8"),
-    readFile(new URL("../package.json", import.meta.url), "utf8"),
-    readdir(previewRoot),
-  ]);
+test("rejects private and local audit targets before streaming", async () => {
+  const worker = await loadWorker("private-target");
+  const response = await worker.fetch(new Request("http://localhost/api/audit", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ url: "http://127.0.0.1/admin" }),
+  }), env, ctx);
 
-  assert.deepEqual(files.sort(), ["SkeletonPreview.tsx", "preview.css"]);
-  assert.match(preview, /from "react-loading-skeleton"/);
-  assert.match(preview, /baseColor="#eceae7"/);
-  assert.match(preview, /highlightColor="#f9f8f6"/);
-  assert.match(preview, /duration=\{2\.8\}/);
-  assert.match(preview, /sites-skeleton-search-placeholder/);
-  assert.match(packageJson, /"react-loading-skeleton": "3\.5\.0"/);
+  assert.equal(response.status, 400);
+  const payload = await response.json();
+  assert.match(payload.error, /Private and local network addresses/i);
+});
 
-  const shellIndex = preview.indexOf('className="sites-skeleton-shell"');
-  const statusIndex = preview.indexOf('className="sites-skeleton-status"');
-  assert.ok(shellIndex >= 0 && statusIndex > shellIndex);
-  assert.match(css, /position:\s*fixed/);
-  assert.match(css, /inset:\s*0/);
-  assert.match(css, /opacity:\s*0\.52/);
-  assert.match(css, /prefers-reduced-motion:\s*reduce/);
-  assert.doesNotMatch(css, /#020617|canvas|pets|progress/i);
-  assert.doesNotMatch(
-    preview,
-    /loading-spinner|status-mark|status-progress|canvas|cookie|random/i,
-  );
+test("streams ordered live audit events and an evidence-backed result", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input) => {
+    const url = new URL(input instanceof Request ? input.url : String(input));
+    if (url.pathname === "/robots.txt") {
+      return new Response("User-agent: *\nAllow: /\n", { status: 200, headers: { "content-type": "text/plain" } });
+    }
+    if (url.pathname === "/sitemap.xml") {
+      return new Response("<urlset><url><loc>https://example.com/</loc></url><url><loc>https://example.com/about</loc></url></urlset>", { status: 200, headers: { "content-type": "application/xml" } });
+    }
+    if (url.pathname === "/llms.txt") {
+      return new Response("# Example\nA useful public description for language models.\n- [About](https://example.com/about)", { status: 200, headers: { "content-type": "text/plain" } });
+    }
+    const html = `<!doctype html><html lang="en"><head><title>Example Research Company</title><meta name="description" content="Evidence-backed services and research."><meta name="viewport" content="width=device-width"><link rel="canonical" href="https://example.com/"><script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Example","sameAs":["https://www.linkedin.com/company/example"]}</script></head><body><h1>Example Research</h1><h2>How does the service work?</h2><p>Our service evaluates public evidence and gives teams a specific, measurable answer. In 2026, the process reviewed 250 documented signals across each selected page, connecting every recommendation to its source so decision makers can verify the result before acting on it.</p><ul><li>Evidence</li><li>Actions</li></ul><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a></body></html>`;
+    return new Response(html, { status: 200, headers: { "content-type": "text/html" } });
+  };
 
-  assert.match(page, /export const metadata:\s*Metadata/);
-  assert.match(page, /"codex-preview": "development"/);
-  assert.match(page, /<SkeletonPreview \/>/);
-  assert.match(layout, /title:\s*"Starter Project"/);
-  assert.doesNotMatch(layout, /codex-preview|_sites-preview|themeColor|\bViewport\b/);
-  assert.doesNotMatch(css, /(^|\s)(html|body)\s*\{/m);
+  try {
+    const worker = await loadWorker("stream");
+    const response = await worker.fetch(new Request("http://localhost/api/audit", {
+      method: "POST",
+      headers: { "content-type": "application/json", accept: "text/event-stream" },
+      body: JSON.stringify({ url: "https://example.com" }),
+    }), env, ctx);
 
-  await assert.rejects(
-    access(new URL("public/_sites-preview", templateRoot)),
-  );
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("content-type") ?? "", /^text\/event-stream/i);
+    const body = await response.text();
+    assert.match(body, /^: connected/m);
+    assert.match(body, /event: progress/);
+    assert.match(body, /event: result/);
+    assert.ok(body.indexOf('"phase":0') < body.indexOf('"phase":6'));
+    const resultData = body.match(/event: result\ndata: (.+)/)?.[1];
+    assert.ok(resultData, "result event should contain JSON data");
+    const result = JSON.parse(resultData);
+    assert.equal(result.domain, "example.com");
+    assert.equal(result.metrics.crawlerTotal, 14);
+    assert.equal(result.methodology.includes("does not claim"), true);
+    assert.equal(Array.isArray(result.findings), true);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });

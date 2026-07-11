@@ -4,11 +4,11 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 
 const scanStages = [
   { label: "Establishing secure crawl", meta: "TLS + headers" },
-  { label: "Discovering site architecture", meta: "83 pages found" },
+  { label: "Discovering site architecture", meta: "Mapping internal URLs" },
   { label: "Testing AI crawler access", meta: "14 agents checked" },
-  { label: "Extracting entities & schema", meta: "24 entities mapped" },
-  { label: "Reading answer passages", meta: "186 blocks scored" },
-  { label: "Simulating buyer prompts", meta: "20 queries tested" },
+  { label: "Extracting entities & schema", meta: "Parsing JSON-LD" },
+  { label: "Reading answer passages", meta: "Scoring extractability" },
+  { label: "Evaluating answer-engine signals", meta: "47 deterministic checks" },
   { label: "Assembling visibility fingerprint", meta: "Evidence ready" },
 ];
 
@@ -36,27 +36,62 @@ const signalCards = [
   },
 ];
 
-const findings = [
-  { code: "CRAWL-01", label: "GPTBot access", value: "Allowed", tone: "good" },
-  { code: "SCHEMA-07", label: "Organization entity", value: "Incomplete", tone: "warn" },
-  { code: "CONTENT-14", label: "Answer extractability", value: "Strong", tone: "good" },
-  { code: "TRUST-03", label: "First-party evidence", value: "Missing", tone: "bad" },
+const sampleFindings: AuditFinding[] = [
+  { code: "CRAWL-01", label: "AI crawler access", value: "All allowed", tone: "good", evidence: "No homepage-blocking rules were found for the checked AI agents.", action: "Keep monitoring robots.txt when deployment rules change." },
+  { code: "SCHEMA-07", label: "Organization entity", value: "Incomplete", tone: "warn", evidence: "The business entity is present but does not include stable sameAs references.", action: "Connect the Organization entity to verified external profiles." },
+  { code: "CONTENT-14", label: "Answer extractability", value: "Strong", tone: "good", evidence: "Multiple self-contained passages can be extracted without surrounding context.", action: "Strengthen the best passages with attributed evidence." },
+  { code: "TRUST-03", label: "First-party evidence", value: "Missing", tone: "bad", evidence: "No attributable statistics or original research were found in the sample.", action: "Publish measurable first-party facts with dates and methodology." },
 ];
+
+type AuditTone = "good" | "warn" | "bad";
+
+type AuditFinding = {
+  code: string;
+  label: string;
+  value: string;
+  tone: AuditTone;
+  evidence: string;
+  action: string;
+};
+
+type AuditResult = {
+  target: string;
+  domain: string;
+  score: number;
+  grade: string;
+  label: string;
+  categories: Array<{ key: string; label: string; score: number }>;
+  findings: AuditFinding[];
+  metrics: {
+    pagesDiscovered: number;
+    pagesScanned: number;
+    crawlersAllowed: number;
+    crawlerTotal: number;
+    entities: number;
+    answerBlocks: number;
+    signalsChecked: number;
+    durationMs: number;
+  };
+  pages: Array<{ url: string; status: number; title: string; words: number }>;
+  methodology: string;
+};
 
 type ScanGraphProps = {
   phase: number;
   running: boolean;
   complete: boolean;
   domain: string;
+  pageNames: string[];
+  nodeTones: AuditTone[];
 };
 
-function ScanGraph({ phase, running, complete, domain }: ScanGraphProps) {
+function ScanGraph({ phase, running, complete, domain, pageNames, nodeTones }: ScanGraphProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const stateRef = useRef({ phase, running, complete, domain });
+  const stateRef = useRef({ phase, running, complete, domain, pageNames, nodeTones });
 
   useEffect(() => {
-    stateRef.current = { phase, running, complete, domain };
-  }, [phase, running, complete, domain]);
+    stateRef.current = { phase, running, complete, domain, pageNames, nodeTones };
+  }, [phase, running, complete, domain, pageNames, nodeTones]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -201,11 +236,12 @@ function ScanGraph({ phase, running, complete, domain }: ScanGraphProps) {
         const ny = node.y * height + py * (0.25 + index * 0.02);
         const revealed = state.complete || (state.running && state.phase >= node.at);
         const pulse = 1 + Math.sin(time * 0.003 + index) * 0.12;
+        const status = state.nodeTones[index % Math.max(1, state.nodeTones.length)] ?? node.status;
         const color = !revealed
           ? "rgba(255,255,255,.22)"
-          : node.status === "good"
+          : status === "good"
             ? "#c9ff47"
-            : node.status === "warn"
+            : status === "warn"
               ? "#ffca5c"
               : "#ff6b61";
 
@@ -221,7 +257,7 @@ function ScanGraph({ phase, running, complete, domain }: ScanGraphProps) {
           ctx.font = "500 9px ui-monospace, SFMono-Regular, Menlo, monospace";
           ctx.fillStyle = "rgba(244,241,232,.62)";
           ctx.textAlign = "center";
-          ctx.fillText(node.name.toUpperCase(), nx, ny + 20);
+          ctx.fillText((state.pageNames[index] ?? node.name).slice(0, 18).toUpperCase(), nx, ny + 20);
         }
       });
 
@@ -290,37 +326,34 @@ export default function Home() {
   const [score, setScore] = useState(0);
   const [running, setRunning] = useState(false);
   const [complete, setComplete] = useState(false);
-  const [runId, setRunId] = useState(0);
+  const [stageLabel, setStageLabel] = useState("");
+  const [stageMeta, setStageMeta] = useState("");
+  const [auditError, setAuditError] = useState("");
+  const [result, setResult] = useState<AuditResult | null>(null);
+  const [selectedFinding, setSelectedFinding] = useState<string | null>(null);
+  const scanAbortRef = useRef<AbortController | null>(null);
+  const runTokenRef = useRef(0);
+
+  useEffect(() => () => scanAbortRef.current?.abort(), []);
 
   useEffect(() => {
-    if (!running) return;
-
+    if (!result) return;
     const started = performance.now();
-    const duration = 10800;
-    const timer = window.setInterval(() => {
-      const elapsed = performance.now() - started;
-      const ratio = Math.min(1, elapsed / duration);
-      const nextPhase = Math.min(scanStages.length - 1, Math.floor(ratio * scanStages.length));
-      setPhase(nextPhase);
-      setProgress(Math.round(ratio * 100));
-      setScore(Math.round(82 * (1 - Math.pow(1 - ratio, 2.4))));
+    let frame = 0;
+    const animate = (now: number) => {
+      const ratio = Math.min(1, (now - started) / 1_050);
+      const eased = 1 - Math.pow(1 - ratio, 3);
+      setScore(Math.round(result.score * eased));
+      if (ratio < 1) frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(frame);
+  }, [result]);
 
-      if (ratio >= 1) {
-        window.clearInterval(timer);
-        setRunning(false);
-        setComplete(true);
-        setPhase(scanStages.length - 1);
-        setProgress(100);
-        setScore(82);
-      }
-    }, 48);
-
-    return () => window.clearInterval(timer);
-  }, [running, runId]);
-
-  const startScan = (event: FormEvent<HTMLFormElement>) => {
+  const startScan = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const value = url.trim() || "yourwebsite.com";
+    const value = url.trim();
+    if (!value) return;
     let normalized = value;
     try {
       normalized = new URL(/^https?:\/\//i.test(value) ? value : `https://${value}`).hostname;
@@ -331,13 +364,115 @@ export default function Home() {
     setDomain(normalized);
     setComplete(false);
     setPhase(0);
-    setProgress(1);
+    setProgress(3);
     setScore(0);
-    setRunId((valueNow) => valueNow + 1);
+    setResult(null);
+    setSelectedFinding(null);
+    setAuditError("");
+    setStageLabel(scanStages[0].label);
+    setStageMeta(`Connecting to ${normalized}`);
     setRunning(true);
+
+    scanAbortRef.current?.abort();
+    const scanController = new AbortController();
+    scanAbortRef.current = scanController;
+    const runToken = runTokenRef.current + 1;
+    runTokenRef.current = runToken;
+    let receivedResult = false;
+    try {
+      const response = await fetch("/api/audit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "text/event-stream" },
+        body: JSON.stringify({ url: value }),
+        signal: scanController.signal,
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({ error: "The audit could not be started." }));
+        throw new Error(typeof payload.error === "string" ? payload.error : "The audit could not be started.");
+      }
+      if (!response.body) throw new Error("The audit stream was unavailable.");
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value: chunk } = await reader.read();
+        buffer += decoder.decode(chunk, { stream: !done });
+        const blocks = buffer.split("\n\n");
+        buffer = blocks.pop() ?? "";
+
+        for (const block of blocks) {
+          if (runToken !== runTokenRef.current) return;
+          if (!block.trim()) continue;
+          let eventName = "message";
+          const dataLines: string[] = [];
+          for (const line of block.split("\n")) {
+            if (line.startsWith("event:")) eventName = line.slice(6).trim();
+            if (line.startsWith("data:")) dataLines.push(line.slice(5).trim());
+          }
+          if (!dataLines.length) continue;
+          const payload = JSON.parse(dataLines.join("\n")) as Record<string, unknown>;
+
+          if (eventName === "progress") {
+            setPhase(typeof payload.phase === "number" ? payload.phase : 0);
+            setProgress(typeof payload.progress === "number" ? payload.progress : 0);
+            setStageLabel(typeof payload.label === "string" ? payload.label : "Analyzing website");
+            setStageMeta(typeof payload.meta === "string" ? payload.meta : "Evidence is arriving");
+          }
+          if (eventName === "result") {
+            const audit = payload as unknown as AuditResult;
+            receivedResult = true;
+            setDomain(audit.domain);
+            setResult(audit);
+            setPhase(scanStages.length - 1);
+            setProgress(100);
+            setStageLabel("Visibility fingerprint assembled");
+            setStageMeta(`${audit.metrics.signalsChecked} signals · ${audit.metrics.pagesScanned} pages sampled`);
+            setComplete(true);
+            setRunning(false);
+          }
+          if (eventName === "error") {
+            throw new Error(typeof payload.message === "string" ? payload.message : "The audit could not be completed.");
+          }
+        }
+
+        if (done) break;
+      }
+
+      if (!receivedResult) throw new Error("The website closed the audit before results were ready.");
+    } catch (error) {
+      if (scanController.signal.aborted || runToken !== runTokenRef.current) return;
+      setRunning(false);
+      setComplete(false);
+      setAuditError(error instanceof Error ? error.message : "The audit could not be completed.");
+      setStageLabel("Scan interrupted");
+      setStageMeta("Check the address and try again");
+    } finally {
+      if (runToken === runTokenRef.current) scanAbortRef.current = null;
+    }
   };
 
   const activeStage = scanStages[Math.max(0, phase)];
+  const activeFindings = result?.findings.length ? result.findings.slice(0, 5) : sampleFindings;
+  const signalCardData = signalCards.map((card, index) => {
+    if (!result) return card;
+    if (index === 0) return { ...card, stat: String(result.metrics.crawlersAllowed), unit: `of ${result.metrics.crawlerTotal}` };
+    if (index === 1) return { ...card, stat: String(result.metrics.answerBlocks), unit: "blocks" };
+    return { ...card, stat: String(result.metrics.entities), unit: "entities" };
+  });
+  const categoryScores = result?.categories.map((category) => category.score) ?? [55, 82, 68, 94, 73, 88];
+  const fingerprintBars = [...categoryScores, ...categoryScores].map((value, index) => Math.max(12, Math.min(100, Math.round(value * (index % 3 === 0 ? 0.82 : index % 3 === 1 ? 1 : 0.92)))));
+  const pageNames = result?.pages.map((page) => {
+    try {
+      const path = new URL(page.url).pathname;
+      return path === "/" ? "home" : path.replace(/^\//, "");
+    } catch {
+      return "page";
+    }
+  }) ?? [];
+  const nodeTones: AuditTone[] = result?.categories.map((category) => category.score >= 75 ? "good" : category.score >= 50 ? "warn" : "bad") ?? [];
 
   return (
     <main>
@@ -373,6 +508,7 @@ export default function Home() {
                 inputMode="url"
                 disabled={running}
                 aria-describedby="audit-note"
+                required
               />
               <button type="submit" disabled={running}>
                 <span>{running ? "Observing" : complete ? "Scan again" : "Reveal my footprint"}</span>
@@ -382,26 +518,28 @@ export default function Home() {
             <div className="form-note" id="audit-note">
               <span>No account</span><span>47+ signals</span><span>Evidence attached</span>
             </div>
+            {auditError && <p className="audit-error" role="alert"><b>Scan stopped</b>{auditError}</p>}
+            {result && <p className="audit-result-note"><b>LIVE CRAWL</b>{result.metrics.pagesScanned} pages sampled in {(result.metrics.durationMs / 1000).toFixed(1)}s. Readiness measures signals—not confirmed citations.</p>}
           </form>
         </div>
 
-        <div className={`observatory ${running ? "is-running" : ""} ${complete ? "is-complete" : ""}`}>
+        <div className={`observatory ${running ? "is-running" : ""} ${complete ? "is-complete" : ""} ${auditError ? "has-error" : ""}`}>
           <div className="observatory-head">
             <span>LIVE SIGNAL MAP</span>
-            <span className="system-status"><i /> {running ? "CRAWL ACTIVE" : complete ? "MAP COMPLETE" : "SYSTEM READY"}</span>
+            <span className="system-status"><i /> {running ? "CRAWL ACTIVE" : complete ? "MAP COMPLETE" : auditError ? "SCAN INTERRUPTED" : "SYSTEM READY"}</span>
           </div>
-          <ScanGraph phase={phase} running={running} complete={complete} domain={domain} />
+          <ScanGraph phase={phase} running={running} complete={complete} domain={domain} pageNames={pageNames} nodeTones={nodeTones} />
           <div className="corner-index corner-index-a">A—01</div>
           <div className="corner-index corner-index-b">{String(Math.max(0, phase + 1)).padStart(2, "0")} / 07</div>
           <div className="scan-data">
             <div className="scan-score">
-              <span>Visibility</span>
+              <span>Readiness</span>
               <strong>{complete || running ? score : "—"}<small>/100</small></strong>
             </div>
             <div className="scan-stage" aria-live="polite">
-              <span>{running ? `PHASE ${String(phase + 1).padStart(2, "0")}` : complete ? "AUDIT COMPLETE" : "AWAITING DOMAIN"}</span>
-              <strong>{running || complete ? activeStage.label : "Enter a website to begin"}</strong>
-              <small>{running || complete ? activeStage.meta : "The map will assemble in real time"}</small>
+              <span>{running ? `PHASE ${String(phase + 1).padStart(2, "0")}` : complete ? `GRADE ${result?.grade ?? "—"} · ${result?.label ?? "AUDIT COMPLETE"}` : auditError ? "AUDIT ERROR" : "AWAITING DOMAIN"}</span>
+              <strong>{running || complete || auditError ? stageLabel || activeStage.label : "Enter a website to begin"}</strong>
+              <small>{running || complete || auditError ? stageMeta || activeStage.meta : "The map will assemble from live crawl evidence"}</small>
             </div>
             <div className="scan-progress" aria-hidden="true">
               <span style={{ width: `${progress}%` }} />
@@ -449,7 +587,7 @@ export default function Home() {
           <p>Three views into the invisible systems deciding who becomes the answer.</p>
         </div>
         <div className="signal-card-grid">
-          {signalCards.map((card) => (
+          {signalCardData.map((card) => (
             <article className="signal-card" key={card.index}>
               <div className="card-top"><span>{card.index}</span><i>↗</i></div>
               <div className="card-orbit" aria-hidden="true">
@@ -474,26 +612,29 @@ export default function Home() {
 
         <div className="evidence-console">
           <div className="console-bar">
-            <span>signal://audit/acme.com</span>
+            <span>signal://audit/{result?.domain ?? "sample.com"}</span>
             <div><i /><i /><i /></div>
           </div>
           <div className="console-summary">
-            <div className="console-score"><small>AI VISIBILITY</small><strong>82</strong><span>↑ 14 pts opportunity</span></div>
+            <div className="console-score"><small>AI READINESS</small><strong>{result ? score : 82}</strong><span>{result ? `${100 - result.score} pts opportunity · grade ${result.grade}` : "↑ 14 pts opportunity"}</span></div>
             <div className="fingerprint" aria-hidden="true">
-              {[55, 82, 68, 94, 73, 88, 61, 79, 96, 70, 84, 64].map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}
+              {fingerprintBars.map((height, index) => <i key={index} style={{ height: `${height}%` }} />)}
             </div>
           </div>
           <div className="finding-list">
-            {findings.map((finding) => (
-              <div className="finding" key={finding.code}>
-                <span>{finding.code}</span>
-                <strong>{finding.label}</strong>
-                <em className={finding.tone}>{finding.value}</em>
-                <button type="button" aria-label={`Open evidence for ${finding.label}`}>↗</button>
+            {activeFindings.map((finding) => (
+              <div className={`finding-shell ${selectedFinding === finding.code ? "is-open" : ""}`} key={finding.code}>
+                <div className="finding">
+                  <span>{finding.code}</span>
+                  <strong>{finding.label}</strong>
+                  <em className={finding.tone}>{finding.value}</em>
+                  <button type="button" aria-expanded={selectedFinding === finding.code} aria-label={`Open evidence for ${finding.label}`} onClick={() => setSelectedFinding((current) => current === finding.code ? null : finding.code)}>↗</button>
+                </div>
+                {selectedFinding === finding.code && <div className="finding-evidence"><span>EVIDENCE</span><p>{finding.evidence}</p><strong>NEXT ACTION</strong><p>{finding.action}</p></div>}
               </div>
             ))}
           </div>
-          <div className="console-foot"><span>47 SIGNALS CHECKED</span><span>4 PRIORITY ACTIONS</span><span>12 MIN TO FIX</span></div>
+          <div className="console-foot"><span>{result?.metrics.signalsChecked ?? 47} SIGNALS CHECKED</span><span>{activeFindings.filter((finding) => finding.tone !== "good").length} PRIORITY ACTIONS</span><span>{result?.metrics.pagesScanned ?? 6} PAGES SAMPLED</span></div>
         </div>
       </section>
 
