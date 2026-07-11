@@ -505,6 +505,7 @@ export default function Home() {
           <h1 id="launch-title"><span>AI</span><span>SIGNAL</span><sup>°</sup></h1>
         </div>
         <p className="banner-copy">SEE WHAT AI CAN FIND. FIX WHAT IT CAN’T.</p>
+        <h3 className="banner-question">YOUR WEBSITE EXISTS.<br />DOES AI KNOW IT?</h3>
         <div className="banner-actions">
           <a className="banner-button primary" href="#scanner"><span>Test Now</span><i>↗</i></a>
           <a className="banner-button secondary" href="#method"><span>How It Works</span><i>↓</i></a>
@@ -520,7 +521,6 @@ export default function Home() {
 
       <section className="hero audit-stage">
         <div className="hero-copy">
-          <div className="eyebrow"><span className="live-dot" /> AI citation observatory</div>
           <h1>Your website exists.<br /><em>Does AI know it?</em></h1>
           <p className="hero-intro">Watch your site become a living signal map. See what AI can reach, understand and confidently cite.</p>
 
