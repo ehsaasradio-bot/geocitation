@@ -51,3 +51,22 @@ export async function saveObservation(email: string, input: PromptObservationInp
   `).bind(id, owner, input.reportId, input.platform, input.promptKey, input.promptText, input.resultState, input.sourceUrl || null, input.notes || null, now, now).run();
   return id;
 }
+
+export async function saveAutomatedRun(email: string, input: { reportId: string; provider: string; model: string; promptKey: string; promptText: string; answerText: string; citations: Array<{ url: string; title: string }>; targetCited: boolean }) {
+  const owner = await ownerKey(email);
+  const id = crypto.randomUUID();
+  const createdAt = Date.now();
+  await (await database()).prepare(`
+    INSERT INTO automated_prompt_runs
+      (id, owner_key, report_id, provider, model, prompt_key, prompt_text, answer_text, citations_json, target_cited, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).bind(id, owner, input.reportId, input.provider, input.model, input.promptKey, input.promptText, input.answerText, JSON.stringify(input.citations), input.targetCited ? 1 : 0, createdAt).run();
+  return { id, createdAt };
+}
+
+export async function countRecentAutomatedRuns(email: string) {
+  const owner = await ownerKey(email);
+  const since = Date.now() - 86_400_000;
+  const row = await (await database()).prepare("SELECT COUNT(*) AS count FROM automated_prompt_runs WHERE owner_key = ? AND created_at >= ?").bind(owner, since).first<{ count: number }>();
+  return Number(row?.count ?? 0);
+}

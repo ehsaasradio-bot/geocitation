@@ -69,8 +69,9 @@ export async function getReport(email: string, id: string): Promise<AuditResult 
 export async function deleteReport(email: string, id: string) {
   const owner = await ownerKey(email);
   const db = await database();
-  const [, result] = await db.batch([
+  const [, , result] = await db.batch([
     db.prepare("DELETE FROM prompt_observations WHERE report_id = ? AND owner_key = ?").bind(id, owner),
+    db.prepare("DELETE FROM automated_prompt_runs WHERE report_id = ? AND owner_key = ?").bind(id, owner),
     db.prepare("DELETE FROM saved_audits WHERE id = ? AND owner_key = ?").bind(id, owner),
   ]);
   return Number(result.meta.changes ?? 0) > 0;

@@ -22,7 +22,8 @@ export default function PrivacyPage() {
         <article><span>06</span><h2>Infrastructure and abuse prevention</h2><p>The hosting platform may process limited security and operational logs. SIGNAL° uses salted one-way identifiers with short expiration windows to enforce audit limits without storing raw network addresses in its rate-limit table.</p></article>
         <article><span>07</span><h2>Sandbox orders</h2><p>Test-mode checkout stores a sandbox plan, simulated amount, status and timestamp under your one-way account identifier. It does not request or store card information and does not contact a payment processor.</p></article>
         <article><span>08</span><h2>Visibility lab observations</h2><p>If you use the premium visibility lab, SIGNAL° stores the platform, generated test prompt, outcome you select, and optional notes or source URL. These are manual observations you provide and are removed when you delete the associated saved report.</p></article>
-        <article><span>09</span><h2>Last updated</h2><p>July 12, 2026. This policy will be updated before real payment processing or automated provider testing is introduced.</p></article>
+        <article><span>09</span><h2>Automated provider runs</h2><p>When a provider credential is connected, SIGNAL° may send the selected public test prompt and audited domain to that provider. Returned answer text, model name, source citations and whether the target was cited are stored with your report. Provider terms and data controls also apply.</p></article>
+        <article><span>10</span><h2>Last updated</h2><p>July 12, 2026. This policy will be updated before real payment processing or additional automated providers are introduced.</p></article>
       </div>
     </InfoPage>
   );

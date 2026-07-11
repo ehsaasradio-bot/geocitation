@@ -75,3 +75,21 @@ export const promptObservations = sqliteTable(
     index("prompt_observations_report_idx").on(table.ownerKey, table.reportId, table.updatedAt),
   ],
 );
+
+export const automatedPromptRuns = sqliteTable(
+  "automated_prompt_runs",
+  {
+    id: text("id").primaryKey(),
+    ownerKey: text("owner_key").notNull(),
+    reportId: text("report_id").notNull(),
+    provider: text("provider").notNull(),
+    model: text("model").notNull(),
+    promptKey: text("prompt_key").notNull(),
+    promptText: text("prompt_text").notNull(),
+    answerText: text("answer_text").notNull(),
+    citationsJson: text("citations_json").notNull(),
+    targetCited: integer("target_cited", { mode: "boolean" }).notNull(),
+    createdAt: integer("created_at").notNull(),
+  },
+  (table) => [index("automated_prompt_runs_owner_created_idx").on(table.ownerKey, table.createdAt), index("automated_prompt_runs_report_idx").on(table.ownerKey, table.reportId, table.createdAt)],
+);

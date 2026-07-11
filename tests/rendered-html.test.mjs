@@ -107,6 +107,9 @@ test("protects the premium visibility lab API", async () => {
   assert.equal(response.status, 401);
   assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow");
   assert.match((await response.json()).error, /Sign in/i);
+
+  const run = await worker.fetch(new Request("http://localhost/api/lab/run/", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ reportId: "a".repeat(32), promptKey: "brand-knowledge", provider: "openai" }) }), env, ctx);
+  assert.equal(run.status, 401);
 });
 
 test("rejects private and local audit targets before streaming", async () => {

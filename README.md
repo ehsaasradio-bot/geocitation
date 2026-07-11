@@ -17,6 +17,8 @@ Phase 3 includes an explicitly labeled payment sandbox. It records simulated ord
 
 Phase 4 adds a premium visibility lab for consistent manual prompt testing across ChatGPT, Perplexity, Gemini, Claude, and Copilot. Observations are stored as user-provided evidence; no provider is represented as automatically tested until its real API is connected. Reports can also be exported as JSON and findings as CSV.
 
+Phase 5 adds a credential-gated OpenAI Responses API adapter with web search, clickable source extraction, target-domain citation detection, a ten-runs-per-day account budget, and durable automated run evidence. The adapter stays disabled unless `OPENAI_API_KEY` is configured in hosted runtime secrets; `OPENAI_VISIBILITY_MODEL` optionally overrides the documented default.
+
 Phase 1 production protection uses D1-backed salted rate-limit identifiers, bounded crawl budgets, same-origin request enforcement and centralized security headers.
 
 ## Local development

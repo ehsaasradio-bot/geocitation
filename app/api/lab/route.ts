@@ -2,11 +2,12 @@ import { getChatGPTUser } from "../../chatgpt-auth";
 import { hasFullAuditAccess } from "../../../lib/billing/sandbox";
 import { getReport } from "../../../lib/reports/store";
 import { listObservations, saveObservation, type ObservationState } from "../../../lib/lab/store";
+import { openAIAvailability } from "../../../lib/providers/openai";
 
 const platforms = new Set(["chatgpt", "perplexity", "gemini", "claude", "copilot"]);
 const states = new Set<ObservationState>(["not_run", "cited", "mentioned", "not_found"]);
 
-async function authorizedUser() {
+export async function authorizedUser() {
   const user = await getChatGPTUser();
   if (!user) return { error: Response.json({ error: "Sign in to use the visibility lab." }, { status: 401 }) };
   if (!(await hasFullAuditAccess(user.email))) return { error: Response.json({ error: "A Full Audit sandbox entitlement is required." }, { status: 402 }) };
@@ -21,7 +22,8 @@ export async function GET(request: Request) {
   const report = await getReport(auth.user.email, reportId);
   if (!report) return Response.json({ error: "Report not found." }, { status: 404 });
   const observations = await listObservations(auth.user.email, reportId);
-  return Response.json({ report, observations, liveProvidersConnected: false }, { headers: { "Cache-Control": "private, no-store" } });
+  const providers = [await openAIAvailability(), { key: "perplexity", name: "Perplexity", connected: false }, { key: "gemini", name: "Gemini", connected: false }, { key: "anthropic", name: "Claude", connected: false }, { key: "copilot", name: "Copilot", connected: false }];
+  return Response.json({ report, observations, providers }, { headers: { "Cache-Control": "private, no-store" } });
 }
 
 export async function POST(request: Request) {
