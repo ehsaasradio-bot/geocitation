@@ -489,7 +489,36 @@ export default function Home() {
         <a className="header-cta" href="#scanner">Run an audit <span>↗</span></a>
       </header>
 
-      <section className="hero" id="top">
+      <section className="launch-banner" id="top" aria-labelledby="launch-title">
+        <div className="banner-atmosphere" aria-hidden="true" />
+        <div className="banner-kicker"><span>AI VISIBILITY / 2026</span><span>LIVE CITATION SIGNALS</span></div>
+        <div className="signal-planet" aria-hidden="true">
+          <i className="planet-orbit orbit-a" />
+          <i className="planet-orbit orbit-b" />
+          <i className="planet-scan" />
+          <b className="planet-node node-a" />
+          <b className="planet-node node-b" />
+          <b className="planet-node node-c" />
+          <span>SIGNAL ACQUISITION</span>
+        </div>
+        <div className="banner-title">
+          <h1 id="launch-title">AI SIGNAL<sup>°</sup></h1>
+        </div>
+        <p className="banner-copy">See the web as answer engines see it—discoverable, understandable, trusted or invisible.</p>
+        <div className="banner-actions">
+          <a className="banner-button primary" href="#scanner"><span>Test Now</span><i>↗</i></a>
+          <a className="banner-button secondary" href="#method"><span>How It Works</span><i>↓</i></a>
+        </div>
+        <div className="banner-specs" aria-hidden="true">
+          <span>REAL-TIME CRAWL</span>
+          <span>47 SIGNALS</span>
+          <span>14 AI AGENTS</span>
+          <span>EVIDENCE LINKED</span>
+        </div>
+        <div className="banner-coordinate" aria-hidden="true">24.7136° N<br />46.6753° E</div>
+      </section>
+
+      <section className="hero audit-stage">
         <div className="hero-copy">
           <div className="eyebrow"><span className="live-dot" /> AI citation observatory</div>
           <h1>Your website exists.<br /><em>Does AI know it?</em></h1>
