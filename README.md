@@ -15,6 +15,8 @@ The current pre-payment release keeps the latest report in browser storage for a
 
 Phase 3 includes an explicitly labeled payment sandbox. It records simulated orders and entitlements for end-to-end product testing, accepts no card data, and processes no real money.
 
+Phase 4 adds a premium visibility lab for consistent manual prompt testing across ChatGPT, Perplexity, Gemini, Claude, and Copilot. Observations are stored as user-provided evidence; no provider is represented as automatically tested until its real API is connected. Reports can also be exported as JSON and findings as CSV.
+
 Phase 1 production protection uses D1-backed salted rate-limit identifiers, bounded crawl budgets, same-origin request enforcement and centralized security headers.
 
 ## Local development

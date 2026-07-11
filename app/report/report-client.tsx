@@ -53,6 +53,25 @@ function getServerReportId() {
   return "";
 }
 
+function safeFilename(value: string) {
+  return value.toLowerCase().replace(/[^a-z0-9.-]+/g, "-").replace(/^-|-$/g, "") || "signal-report";
+}
+
+function downloadFile(name: string, body: string, type: string) {
+  const url = URL.createObjectURL(new Blob([body], { type }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = name;
+  anchor.click();
+  URL.revokeObjectURL(url);
+}
+
+function csvCell(value: unknown) {
+  let text = String(value ?? "");
+  if (/^[=+\-@]/.test(text)) text = `'${text}`;
+  return `"${text.replaceAll('"', '""')}"`;
+}
+
 export function ReportClient() {
   const storedAudit = useSyncExternalStore(subscribeToStoredAudit, getStoredAudit, getServerAudit);
   const localResult = useMemo<AuditResult | null | undefined>(() => {
@@ -109,6 +128,11 @@ export function ReportClient() {
 
   const issues = result.findings.filter((finding) => finding.tone !== "good");
   const strengths = result.findings.filter((finding) => finding.tone === "good");
+  const exportJson = () => downloadFile(`${safeFilename(result.domain)}-signal-report.json`, JSON.stringify(result, null, 2), "application/json");
+  const exportCsv = () => {
+    const rows = [["code", "label", "tone", "value", "evidence", "action"], ...result.findings.map((finding) => [finding.code, finding.label, finding.tone, finding.value, finding.evidence, finding.action])];
+    downloadFile(`${safeFilename(result.domain)}-signal-findings.csv`, rows.map((row) => row.map(csvCell).join(",")).join("\n"), "text/csv;charset=utf-8");
+  };
 
   return (
     <main className="report-page" id="main-content">
@@ -136,6 +160,9 @@ export function ReportClient() {
           <div className="report-cover-actions">
             <a href={result.target} target="_blank" rel="noreferrer">Visit website <span>↗</span></a>
             <Link href="/#scanner">Run another audit <span>↗</span></Link>
+            <button type="button" onClick={exportJson}>Export JSON <span>↓</span></button>
+            <button type="button" onClick={exportCsv}>Export CSV <span>↓</span></button>
+            {premiumUnlocked && reportId && <Link href={`/lab?report=${reportId}`}>Open visibility lab <span>↗</span></Link>}
           </div>
         </div>
         <div className="report-score" aria-label={`Readiness score ${result.score} out of 100`}>

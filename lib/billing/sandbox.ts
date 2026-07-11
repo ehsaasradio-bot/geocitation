@@ -58,3 +58,11 @@ export async function getSandboxStatus(email: string) {
     orders: orders.results,
   };
 }
+
+export async function hasFullAuditAccess(email: string) {
+  const owner = await ownerKey(email);
+  const row = await (await database()).prepare(
+    "SELECT full_audit AS fullAudit FROM sandbox_entitlements WHERE owner_key = ? LIMIT 1",
+  ).bind(owner).first<{ fullAudit: number }>();
+  return Boolean(row?.fullAudit);
+}

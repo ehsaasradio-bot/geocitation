@@ -101,6 +101,14 @@ test("exposes sandbox status without accepting anonymous orders", async () => {
   assert.match((await checkout.json()).error, /Sign in/i);
 });
 
+test("protects the premium visibility lab API", async () => {
+  const worker = await loadWorker("visibility-lab");
+  const response = await worker.fetch(new Request("http://localhost/api/lab?reportId=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"), env, ctx);
+  assert.equal(response.status, 401);
+  assert.equal(response.headers.get("x-robots-tag"), "noindex, nofollow");
+  assert.match((await response.json()).error, /Sign in/i);
+});
+
 test("rejects private and local audit targets before streaming", async () => {
   const worker = await loadWorker("private-target");
   const response = await worker.fetch(new Request("http://localhost/api/audit", {

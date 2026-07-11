@@ -19,6 +19,7 @@ export default function TermsPage() {
         <article><span>03</span><h2>Sandbox checkout</h2><p>The current checkout is a test-mode rehearsal only. It cannot accept card data, does not move money and creates no real purchase or subscription. Sandbox orders and entitlements may be reset before production payment processing is introduced.</p></article>
         <article><span>04</span><h2>Availability</h2><p>The service may change as AI crawlers, answer engines, standards and website technologies evolve.</p></article>
         <article><span>05</span><h2>Responsible access</h2><p>Automated abuse, attempts to reach private networks, excessive requests and interference with the service are prohibited. Access may be limited to protect audited websites and the platform.</p></article>
+        <article><span>06</span><h2>Manual model observations</h2><p>Visibility Lab results are user-recorded observations unless a provider is explicitly marked as connected. You are responsible for accurately recording model outputs and respecting each provider’s terms. SIGNAL° does not represent manual entries as independently verified.</p></article>
       </div>
     </InfoPage>
   );

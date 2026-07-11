@@ -21,7 +21,8 @@ export default function PrivacyPage() {
         <article><span>05</span><h2>Identity and privacy</h2><p>Saved reports are owned through a salted one-way identifier derived from your signed-in account. The report table stores the scanned URL, evidence, score and timestamp, but not your email address.</p></article>
         <article><span>06</span><h2>Infrastructure and abuse prevention</h2><p>The hosting platform may process limited security and operational logs. SIGNAL° uses salted one-way identifiers with short expiration windows to enforce audit limits without storing raw network addresses in its rate-limit table.</p></article>
         <article><span>07</span><h2>Sandbox orders</h2><p>Test-mode checkout stores a sandbox plan, simulated amount, status and timestamp under your one-way account identifier. It does not request or store card information and does not contact a payment processor.</p></article>
-        <article><span>08</span><h2>Last updated</h2><p>July 11, 2026. This policy will be updated before real payment processing is introduced.</p></article>
+        <article><span>08</span><h2>Visibility lab observations</h2><p>If you use the premium visibility lab, SIGNAL° stores the platform, generated test prompt, outcome you select, and optional notes or source URL. These are manual observations you provide and are removed when you delete the associated saved report.</p></article>
+        <article><span>09</span><h2>Last updated</h2><p>July 12, 2026. This policy will be updated before real payment processing or automated provider testing is introduced.</p></article>
       </div>
     </InfoPage>
   );

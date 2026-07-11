@@ -1,4 +1,4 @@
-import { index, integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { index, integer, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const auditRateLimits = sqliteTable(
   "audit_rate_limits",
@@ -53,4 +53,25 @@ export const sandboxEntitlements = sqliteTable(
     consultation: integer("consultation", { mode: "boolean" }).notNull().default(false),
     updatedAt: integer("updated_at").notNull(),
   },
+);
+
+export const promptObservations = sqliteTable(
+  "prompt_observations",
+  {
+    id: text("id").primaryKey(),
+    ownerKey: text("owner_key").notNull(),
+    reportId: text("report_id").notNull(),
+    platform: text("platform").notNull(),
+    promptKey: text("prompt_key").notNull(),
+    promptText: text("prompt_text").notNull(),
+    resultState: text("result_state").notNull(),
+    sourceUrl: text("source_url"),
+    notes: text("notes"),
+    observedAt: integer("observed_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    uniqueIndex("prompt_observations_owner_test_idx").on(table.ownerKey, table.reportId, table.platform, table.promptKey),
+    index("prompt_observations_report_idx").on(table.ownerKey, table.reportId, table.updatedAt),
+  ],
 );
