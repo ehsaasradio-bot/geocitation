@@ -58,7 +58,7 @@ export function VisibilityLab({ reportId }: { reportId: string }) {
     setSaving(key);
     setError("");
     try {
-      const response = await fetch("/api/lab/run/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reportId, promptKey, provider: "openai" }) });
+      const response = await fetch("/api/lab-run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reportId, promptKey, provider: "openai" }) });
       const payload = await response.json() as { run?: AutomatedRun; error?: string };
       if (!response.ok || !payload.run) throw new Error(payload.error || "The provider run failed.");
       setAutomatedRuns((current) => ({ ...current, [promptKey]: payload.run! }));

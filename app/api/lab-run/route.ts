@@ -1,8 +1,8 @@
-import { authorizedUser } from "../route";
-import { getReport, ownerKey } from "../../../../lib/reports/store";
-import { visibilityPromptPack } from "../../../../lib/lab/prompts";
-import { countRecentAutomatedRuns, saveAutomatedRun } from "../../../../lib/lab/store";
-import { openAIAvailability, runOpenAIVisibilityTest } from "../../../../lib/providers/openai";
+import { authorizedUser } from "../lab/route";
+import { getReport, ownerKey } from "../../../lib/reports/store";
+import { visibilityPromptPack } from "../../../lib/lab/prompts";
+import { countRecentAutomatedRuns, saveAutomatedRun } from "../../../lib/lab/store";
+import { openAIAvailability, runOpenAIVisibilityTest } from "../../../lib/providers/openai";
 
 export async function POST(request: Request) {
   const auth = await authorizedUser();
@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     const stored = await saveAutomatedRun(auth.user.email, { reportId: payload.reportId, provider: run.provider, model: run.model, promptKey: prompt.key, promptText: prompt.text, answerText: run.answer, citations: run.citations, targetCited: run.targetCited });
     return Response.json({ run: { ...run, ...stored } }, { status: 201, headers: { "Cache-Control": "no-store" } });
   } catch (error) {
-    const message = error instanceof Error && error.message === "OPENAI_PROVIDER_NOT_CONFIGURED" ? "OpenAI test credentials are not configured." : "The provider run failed without producing evidence.";
-    return Response.json({ error: message }, { status: error instanceof Error && error.message === "OPENAI_PROVIDER_NOT_CONFIGURED" ? 503 : 502 });
+    const notConfigured = error instanceof Error && error.message === "OPENAI_PROVIDER_NOT_CONFIGURED";
+    return Response.json({ error: notConfigured ? "OpenAI test credentials are not configured." : "The provider run failed without producing evidence." }, { status: notConfigured ? 503 : 502 });
   }
 }
