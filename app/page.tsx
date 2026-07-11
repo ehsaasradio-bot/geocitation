@@ -537,7 +537,7 @@ export default function Home() {
             </button>
           </div>
           <div className="form-note" id="audit-note">
-            <span>No account</span><span>43 signals</span><span>Evidence attached</span>
+            <span>No account</span><span>43 signals</span><span>Evidence attached</span><span>Protected limits</span>
           </div>
           {auditError && <p className="audit-error" role="alert"><b>Scan stopped</b>{auditError}</p>}
           {result && <p className="audit-result-note"><b>LIVE CRAWL</b>{result.metrics.pagesScanned} {result.metrics.pagesScanned === 1 ? "page" : "pages"} sampled in {(result.metrics.durationMs / 1000).toFixed(1)}s. Readiness measures signals—not confirmed citations.</p>}

@@ -36,7 +36,7 @@ export default function MethodologyPage() {
         ))}
       </div>
       <div className="methodology-notes">
-        <article><span>WHAT IS FETCHED</span><p>Up to six public HTML pages plus robots.txt, sitemap.xml and llms.txt, with strict request, redirect, time and response-size limits.</p></article>
+        <article><span>WHAT IS FETCHED</span><p>Up to six public HTML pages plus robots.txt, sitemap.xml and llms.txt, with strict request, redirect, time, response-size and abuse limits.</p></article>
         <article><span>RENDERING MODE</span><p>Source HTML only. Content that appears exclusively after client-side JavaScript runs may not be fully represented in this release.</p></article>
         <article><span>NO GUARANTEE</span><p>No audit can guarantee rankings, traffic or AI citations. The report identifies observable barriers, strengths and next actions.</p></article>
       </div>

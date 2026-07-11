@@ -717,8 +717,12 @@ function userFacingError(error: unknown) {
 export async function POST(request: Request) {
   const requestUrl = new URL(request.url);
   const origin = request.headers.get("origin");
-  if (origin && origin !== requestUrl.origin) {
+  const fetchSite = request.headers.get("sec-fetch-site");
+  if ((origin && origin !== requestUrl.origin) || (fetchSite && !["same-origin", "same-site", "none"].includes(fetchSite))) {
     return Response.json({ error: "Cross-origin audit requests are not allowed." }, { status: 403 });
+  }
+  if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get("content-type") ?? "")) {
+    return Response.json({ error: "Audit requests must use JSON." }, { status: 415 });
   }
 
   let target: URL;
@@ -833,7 +837,7 @@ export async function POST(request: Request) {
   return new Response(stream, {
     headers: {
       "Content-Type": "text/event-stream; charset=utf-8",
-      "Cache-Control": "no-cache, no-transform",
+      "Cache-Control": "no-store, no-transform",
       "X-Content-Type-Options": "nosniff",
     },
   });

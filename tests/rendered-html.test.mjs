@@ -19,6 +19,32 @@ const ctx = {
   passThroughOnException() {},
 };
 
+class MockRateLimitDb {
+  counts = new Map();
+
+  prepare(sql) {
+    let values = [];
+    const counts = this.counts;
+    const statement = {
+      bind(...nextValues) {
+        values = nextValues;
+        return statement;
+      },
+      async first() {
+        if (!sql.includes("INSERT INTO audit_rate_limits")) return null;
+        const key = String(values[0]);
+        const count = (counts.get(key) ?? 0) + 1;
+        counts.set(key, count);
+        return { request_count: count };
+      },
+      async run() {
+        return { success: true };
+      },
+    };
+    return statement;
+  }
+}
+
 test("server-renders the Signal observatory", async () => {
   const worker = await loadWorker("page");
   const response = await worker.fetch(new Request("http://localhost/", {
@@ -27,6 +53,9 @@ test("server-renders the Signal observatory", async () => {
 
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
+  assert.equal(response.headers.get("x-frame-options"), "DENY");
+  assert.equal(response.headers.get("x-content-type-options"), "nosniff");
+  assert.match(response.headers.get("content-security-policy") ?? "", /frame-ancestors 'none'/);
 
   const html = await response.text();
   assert.match(html, /SIGNAL°/);
@@ -173,4 +202,52 @@ test("rejects cross-origin and oversized audit requests", async () => {
   }), env, ctx);
   assert.equal(oversized.status, 400);
   assert.match((await oversized.json()).error, /too large/i);
+
+  const wrongType = await worker.fetch(new Request("http://localhost/api/audit", {
+    method: "POST",
+    headers: { "content-type": "text/plain" },
+    body: JSON.stringify({ url: "https://example.com" }),
+  }), env, ctx);
+  assert.equal(wrongType.status, 415);
+});
+
+test("durably limits repeated production audits without storing raw addresses", async () => {
+  const originalFetch = globalThis.fetch;
+  globalThis.fetch = async (input) => {
+    const url = new URL(input instanceof Request ? input.url : String(input));
+    if (url.pathname === "/robots.txt") return new Response("User-agent: *\nAllow: /", { status: 200, headers: { "content-type": "text/plain" } });
+    if (url.pathname === "/sitemap.xml") return new Response("<urlset></urlset>", { status: 200, headers: { "content-type": "application/xml" } });
+    if (url.pathname === "/llms.txt") return new Response("# Example\nA public language-model guidance file for testing rate limits.", { status: 200, headers: { "content-type": "text/plain" } });
+    return new Response("<!doctype html><html lang=\"en\"><head><title>Rate limit test</title><meta name=\"description\" content=\"A bounded public audit test.\"><meta name=\"viewport\" content=\"width=device-width\"></head><body><h1>Rate limit test</h1><p>This page contains enough public text to exercise the protected audit route while avoiding any dependency on a real external website during automated verification.</p></body></html>", { status: 200, headers: { "content-type": "text/html" } });
+  };
+
+  try {
+    const worker = await loadWorker("rate-limit");
+    const rateDb = new MockRateLimitDb();
+    const protectedEnv = { ...env, DB: rateDb, RATE_LIMIT_SALT: "test-only-salt" };
+    const request = () => new Request("https://signal-observatory.syedmubashirhaq.chatgpt.site/api/audit", {
+      method: "POST",
+      headers: {
+        "content-type": "application/json",
+        accept: "text/event-stream",
+        origin: "https://signal-observatory.syedmubashirhaq.chatgpt.site",
+        "cf-connecting-ip": "203.0.113.25",
+      },
+      body: JSON.stringify({ url: "https://example.com" }),
+    });
+
+    for (let index = 0; index < 5; index += 1) {
+      const response = await worker.fetch(request(), protectedEnv, ctx);
+      assert.equal(response.status, 200);
+      await response.text();
+    }
+
+    const blocked = await worker.fetch(request(), protectedEnv, ctx);
+    assert.equal(blocked.status, 429);
+    assert.match((await blocked.json()).error, /free audit limit/i);
+    assert.ok(Number(blocked.headers.get("retry-after")) > 0);
+    assert.equal([...rateDb.counts.keys()].some((key) => key.includes("203.0.113.25")), false);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });

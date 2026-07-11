@@ -18,7 +18,7 @@ export default function PrivacyPage() {
         <article><span>02</span><h2>How it is used</h2><p>The submitted URL and fetched public signals are used to calculate the requested audit, return evidence and protect the service from misuse.</p></article>
         <article><span>03</span><h2>Public website data</h2><p>Audit checks are based on public pages, metadata, robots rules, structured data and other publicly reachable signals.</p></article>
         <article><span>04</span><h2>Report storage</h2><p>This pre-payment release does not create an account or store a report in an application database. Your latest completed report is saved in browser storage on your device so you can open the report page.</p></article>
-        <article><span>05</span><h2>Infrastructure</h2><p>The hosting platform may process limited security and operational logs, such as request times and network information, under its own service terms. Reports can be removed from your device by clearing site data.</p></article>
+        <article><span>05</span><h2>Infrastructure and abuse prevention</h2><p>The hosting platform may process limited security and operational logs. SIGNAL° uses salted one-way identifiers with short expiration windows to enforce audit limits without storing raw network addresses in its rate-limit table. Reports can be removed from your device by clearing site data.</p></article>
         <article><span>06</span><h2>Last updated</h2><p>July 11, 2026. This policy will be updated before accounts, payment processing or persistent report storage are introduced.</p></article>
       </div>
     </InfoPage>

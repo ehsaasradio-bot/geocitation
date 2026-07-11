@@ -12,6 +12,8 @@ AI SIGNAL° is a live website observatory for public AI discoverability and cita
 
 The current pre-payment release stores the latest report in browser storage. Checkout, persistent customer reports, model-specific prompt testing, and generated PDF delivery are reserved for the next phase.
 
+Phase 1 production protection uses D1-backed salted rate-limit identifiers, bounded crawl budgets, same-origin request enforcement and centralized security headers.
+
 ## Local development
 
 Requires Node.js `>=22.13.0`.
