@@ -334,14 +334,30 @@ test("server-renders the full public information and report routes", async () =>
   }
 });
 
-test("protects sandbox checkout behind sign-in even with return params", async () => {
+test("keeps sandbox checkout context on-page before sign-in", async () => {
   const worker = await loadWorker("protected-checkout");
   const response = await worker.fetch(new Request("http://localhost/checkout?plan=full-audit&report=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&next=lab", {
     headers: { accept: "text/html" },
   }), env, ctx);
 
-  assert.equal(response.status, 307);
-  assert.match(response.headers.get("location") ?? "", /\/signin-with-chatgpt\?return_to=%2Fcheckout%3Fplan%3Dfull-audit/);
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /PAYMENT REHEARSAL \/ SIGN IN REQUIRED/);
+  assert.match(html, /CONTEXT PRESERVED/);
+  assert.match(html, /\/signin-with-chatgpt\?return_to=%2Fcheckout%3Fplan%3Dfull-audit%26report%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa%26next%3Dlab/);
+});
+
+test("keeps visibility lab report context on-page before sign-in", async () => {
+  const worker = await loadWorker("protected-lab-page");
+  const response = await worker.fetch(new Request("http://localhost/lab?report=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", {
+    headers: { accept: "text/html" },
+  }), env, ctx);
+
+  assert.equal(response.status, 200);
+  const html = await response.text();
+  assert.match(html, /VISIBILITY LAB \/ SIGN IN REQUIRED/);
+  assert.match(html, /bring you back to this exact report-linked lab route/i);
+  assert.match(html, /\/signin-with-chatgpt\?return_to=%2Flab%3Freport%3Daaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/);
 });
 
 test("protects sandbox receipt pages behind sign-in", async () => {

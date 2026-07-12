@@ -590,9 +590,11 @@ footer > div a:hover { color: var(--signal); }
 .checkout-card dt { color: rgba(241,238,229,.38); font: 650 8px var(--font-geist-mono),monospace; letter-spacing: .1em; text-transform: uppercase; }
 .checkout-card dd { margin: 0; color: rgba(241,238,229,.7); font-size: 12px; overflow-wrap: anywhere; }
 .checkout-card > button,.checkout-success a { width: 100%; min-height: 58px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; border: 0; background: var(--signal); color: var(--ink); cursor: pointer; font: 700 9px var(--font-geist-mono),monospace; letter-spacing: .09em; text-transform: uppercase; }
+.checkout-card > a { width: 100%; min-height: 58px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; background: var(--signal); color: var(--ink); font: 700 9px var(--font-geist-mono),monospace; letter-spacing: .09em; text-transform: uppercase; }
 .checkout-card > button:disabled { opacity: .6; cursor: wait; }
 .checkout-card > p { color: rgba(241,238,229,.54); font-size: 12px; line-height: 1.6; }
 .checkout-card > p[role="alert"] { color: var(--coral); }
+.checkout-gate { min-height: 540px; display: flex; flex-direction: column; justify-content: space-between; }
 .checkout-success i { width: 76px; height: 76px; margin-bottom: 48px; display: grid; place-items: center; border-radius: 50%; background: var(--signal); color: var(--ink); font-size: 32px; font-style: normal; }
 .checkout-success h2 { margin-top: 25px; }
 .checkout-success p { margin: 25px 0 52px; color: rgba(241,238,229,.55); line-height: 1.6; }
@@ -607,6 +609,9 @@ footer > div a:hover { color: var(--signal); }
 .lab-empty h1 { max-width: 1200px; font-size: clamp(68px,9vw,152px); }
 .lab-empty > p:not(.lead-line) { max-width: 650px; margin: 35px 0; color: rgba(241,238,229,.56); font-size: 16px; line-height: 1.6; }
 .lab-empty > a { width: 250px; height: 56px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; border-radius: 999px; background: var(--signal); color: var(--ink); font: 700 9px var(--font-geist-mono),monospace; letter-spacing: .08em; text-transform: uppercase; }
+.lab-gate h1 span { color: var(--signal); }
+.lab-gate-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.lab-gate-actions a:last-child { background: transparent; color: var(--paper); border: 1px solid rgba(241,238,229,.18); }
 .lab-loading { min-height: calc(100vh - 86px); display: flex; align-items: center; justify-content: center; gap: 18px; color: rgba(241,238,229,.45); font: 650 9px var(--font-geist-mono),monospace; letter-spacing: .13em; }
 .lab-hero { min-height: 680px; padding: 105px 3.25vw 72px; border-bottom: 1px solid var(--line); background: radial-gradient(circle at 77% 45%,rgba(201,255,71,.11),transparent 27%),linear-gradient(rgba(241,238,229,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(241,238,229,.025) 1px,transparent 1px),#070908; background-size: auto,56px 56px,56px 56px,auto; }
 .lab-hero h1 { max-width: 1250px; font-size: clamp(72px,10vw,172px); line-height: .83; }
