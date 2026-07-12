@@ -36,13 +36,22 @@ export const sandboxOrders = sqliteTable(
   {
     id: text("id").primaryKey(),
     ownerKey: text("owner_key").notNull(),
+    reference: text("reference").notNull(),
     plan: text("plan").notNull(),
+    reportId: text("report_id"),
+    entitlementKey: text("entitlement_key").notNull(),
     amountCents: integer("amount_cents").notNull(),
     currency: text("currency").notNull().default("USD"),
-    status: text("status").notNull().default("test_paid"),
+    status: text("status").notNull().default("created"),
+    statusDetail: text("status_detail").notNull().default("Awaiting sandbox confirmation."),
     createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+    fulfilledAt: integer("fulfilled_at"),
   },
-  (table) => [index("sandbox_orders_owner_created_idx").on(table.ownerKey, table.createdAt)],
+  (table) => [
+    index("sandbox_orders_owner_created_idx").on(table.ownerKey, table.createdAt),
+    uniqueIndex("sandbox_orders_reference_idx").on(table.reference),
+  ],
 );
 
 export const sandboxEntitlements = sqliteTable(

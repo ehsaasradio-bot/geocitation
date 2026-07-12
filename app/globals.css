@@ -540,6 +540,10 @@ footer > div a:hover { color: var(--signal); }
 .sandbox-account-strip span,.sandbox-account-strip p { color: rgba(241,238,229,.45); font: 650 8px var(--font-geist-mono),monospace; letter-spacing: .1em; text-transform: uppercase; }
 .sandbox-account-strip strong { color: var(--signal); font: 650 10px var(--font-geist-mono),monospace; letter-spacing: .1em; }
 .sandbox-account-strip a { padding: 12px 15px; border-radius: 999px; background: var(--signal); color: var(--ink); font: 700 8px var(--font-geist-mono),monospace; text-transform: uppercase; letter-spacing: .08em; }
+.account-order-list { margin: -8px 0 55px; border-top: 1px solid var(--line); }
+.account-order-list article { min-height: 92px; display: grid; grid-template-columns: minmax(0,1.5fr) 180px 170px 150px auto; gap: 18px; align-items: center; border-bottom: 1px solid var(--line); }
+.account-order-list article > div:first-child { padding-right: 20px; }
+.account-order-list article p { margin: 8px 0 0; color: rgba(241,238,229,.45); font-size: 12px; line-height: 1.5; }
 .checkout-page { min-height: 100vh; background: #070908; color: var(--paper); }
 .checkout-page .account-nav > a:last-child { padding: 11px 15px; border: 1px solid rgba(241,238,229,.25); border-radius: 999px; font: 650 9px var(--font-geist-mono),monospace; letter-spacing: .08em; text-transform: uppercase; }
 .checkout-shell { min-height: calc(100vh - 86px); display: grid; grid-template-columns: minmax(0,1.15fr) minmax(420px,.65fr); gap: 70px; align-items: center; padding: 80px 7vw; background: radial-gradient(circle at 72% 42%,rgba(201,255,71,.11),transparent 25%),linear-gradient(rgba(241,238,229,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(241,238,229,.025) 1px,transparent 1px); background-size: auto,56px 56px,56px 56px; }
@@ -560,11 +564,16 @@ footer > div a:hover { color: var(--signal); }
 .checkout-card dd { margin: 0; color: rgba(241,238,229,.7); font-size: 12px; overflow-wrap: anywhere; }
 .checkout-card > button,.checkout-success a { width: 100%; min-height: 58px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; border: 0; background: var(--signal); color: var(--ink); cursor: pointer; font: 700 9px var(--font-geist-mono),monospace; letter-spacing: .09em; text-transform: uppercase; }
 .checkout-card > button:disabled { opacity: .6; cursor: wait; }
-.checkout-card > p { color: var(--coral); font-size: 12px; }
+.checkout-card > p { color: rgba(241,238,229,.54); font-size: 12px; line-height: 1.6; }
+.checkout-card > p[role="alert"] { color: var(--coral); }
 .checkout-success i { width: 76px; height: 76px; margin-bottom: 48px; display: grid; place-items: center; border-radius: 50%; background: var(--signal); color: var(--ink); font-size: 32px; font-style: normal; }
 .checkout-success h2 { margin-top: 25px; }
 .checkout-success p { margin: 25px 0 52px; color: rgba(241,238,229,.55); line-height: 1.6; }
 .checkout-success a + a { margin-top: 10px; background: var(--paper); }
+.checkout-receipt { margin: 0 0 36px; border-top: 1px solid var(--line); }
+.checkout-receipt > div { min-height: 54px; display: grid; grid-template-columns: 110px 1fr; align-items: center; border-bottom: 1px solid var(--line); }
+.checkout-receipt dt { color: rgba(241,238,229,.38); font: 650 8px var(--font-geist-mono),monospace; letter-spacing: .1em; text-transform: uppercase; }
+.checkout-receipt dd { margin: 0; color: rgba(241,238,229,.72); font-size: 12px; overflow-wrap: anywhere; }
 .lab-page { min-height: 100vh; background: #070908; color: var(--paper); }
 .lab-page .account-nav > a:last-child { padding: 11px 15px; border: 1px solid rgba(241,238,229,.25); border-radius: 999px; font: 650 9px var(--font-geist-mono),monospace; letter-spacing: .08em; text-transform: uppercase; }
 .lab-empty { min-height: calc(100vh - 86px); padding: 110px 3.25vw 75px; display: flex; flex-direction: column; justify-content: center; background: radial-gradient(circle at 80% 45%,rgba(201,255,71,.1),transparent 26%),#070908; }
@@ -856,6 +865,8 @@ footer > div a:hover { color: var(--signal); }
   .account-history-head { grid-template-columns: 1fr; gap: 28px; }
   .account-history-head h2 { font-size: 58px; }
   .account-report-list { min-width: 760px; }
+  .account-order-list { min-width: 900px; }
+  .account-order-list article { grid-template-columns: minmax(260px,1.5fr) 170px 150px 120px auto; }
   .roadmap-grid { grid-template-columns: 1fr; }
   .roadmap-grid > article { min-height: 440px; }
   .roadmap-grid > article > strong { margin-bottom: 45px; }

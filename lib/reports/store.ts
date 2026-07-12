@@ -11,8 +11,12 @@ type SavedReportSummary = {
 };
 
 async function runtimeEnv(): Promise<{ DB?: D1Database; RATE_LIMIT_SALT?: string }> {
-  const runtime = await import("cloudflare:workers");
-  return runtime.env;
+  try {
+    const runtime = await import("cloudflare:workers");
+    return runtime.env;
+  } catch {
+    return (globalThis as { __TEST_ENV__?: { DB?: D1Database; RATE_LIMIT_SALT?: string } }).__TEST_ENV__ ?? {};
+  }
 }
 
 async function database() {

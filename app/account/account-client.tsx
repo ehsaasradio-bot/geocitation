@@ -13,13 +13,28 @@ type ReportSummary = {
   createdAt: number;
 };
 
+type SandboxOrder = {
+  id: string;
+  reference: string;
+  plan: "full-audit" | "done-for-you";
+  reportId: string | null;
+  entitlementKey: "full_audit" | "consultation";
+  amountCents: number;
+  currency: string;
+  status: "created" | "processing" | "test_paid";
+  statusDetail: string;
+  createdAt: number;
+  updatedAt: number;
+  fulfilledAt: number | null;
+};
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
 export function AccountClient() {
   const [reports, setReports] = useState<ReportSummary[] | null>(null);
-  const [sandbox, setSandbox] = useState<{ fullAudit: boolean; consultation: boolean; orders: unknown[] } | null>(null);
+  const [sandbox, setSandbox] = useState<{ fullAudit: boolean; consultation: boolean; orders: SandboxOrder[] } | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -31,7 +46,7 @@ export function AccountClient() {
 
   useEffect(() => {
     void fetch("/api/billing/status", { cache: "no-store" })
-      .then(async (response) => response.json() as Promise<{ fullAudit: boolean; consultation: boolean; orders: unknown[] }>)
+      .then(async (response) => response.json() as Promise<{ fullAudit: boolean; consultation: boolean; orders: SandboxOrder[] }>)
       .then(setSandbox)
       .catch(() => undefined);
   }, []);
@@ -45,7 +60,19 @@ export function AccountClient() {
   return (
     <section className="account-history" aria-labelledby="history-title">
       <div className="account-history-head"><span>01 / SAVED EVIDENCE</span><h2 id="history-title">Audit <span>timeline.</span></h2></div>
-      {sandbox && <div className="sandbox-account-strip"><span>PAYMENT SANDBOX / TEST MODE</span><strong>{sandbox.fullAudit ? "FULL AUDIT ACTIVE" : sandbox.consultation ? "CONSULTATION TESTED" : "NO TEST ORDER"}</strong><p>{sandbox.orders.length} sandbox {sandbox.orders.length === 1 ? "order" : "orders"} · No real charges</p><Link href="/checkout?plan=full-audit">Open sandbox ↗</Link></div>}
+      {sandbox && <div className="sandbox-account-strip"><span>PAYMENT SANDBOX / TEST MODE</span><strong>{sandbox.fullAudit ? "FULL AUDIT ACTIVE" : sandbox.consultation ? "CONSULTATION TESTED" : "NO TEST ORDER"}</strong><p>{sandbox.orders.length} sandbox {sandbox.orders.length === 1 ? "order" : "orders"} · {sandbox.orders[0]?.status === "test_paid" ? "Latest payment confirmed" : sandbox.orders[0]?.status === "processing" ? "Sandbox processing" : sandbox.orders[0] ? "Awaiting confirmation" : "No real charges"}</p><Link href="/checkout?plan=full-audit">Open sandbox ↗</Link></div>}
+      {sandbox?.orders.length ? <div className="account-order-list">
+        <div className="account-report-head"><span>Order</span><span>Status</span><span>Plan</span><span>Updated</span><span>Actions</span></div>
+        {sandbox.orders.map((order) => (
+          <article key={order.id}>
+            <div><strong>{order.reference}</strong><p>{order.statusDetail}</p></div>
+            <time dateTime={new Date(order.updatedAt).toISOString()}>{formatDate(new Date(order.updatedAt).toISOString())}</time>
+            <b>{order.plan === "full-audit" ? "Full Audit" : "Done-For-You"}</b>
+            <em>{order.status === "test_paid" ? "Paid" : order.status === "processing" ? "Processing" : "Created"}</em>
+            <div className="account-row-actions">{order.reportId ? <Link href={`/report?id=${order.reportId}`}>Open report ↗</Link> : <Link href="/checkout?plan=full-audit">New sandbox ↗</Link>}{order.entitlementKey === "full_audit" && sandbox.fullAudit && order.reportId ? <Link href={`/lab?report=${order.reportId}`}>Open lab ↗</Link> : <Link href={order.plan === "done-for-you" ? "/contact" : "/checkout?plan=full-audit"}>{order.plan === "done-for-you" ? "Contact us ↗" : "Open sandbox ↗"}</Link>}</div>
+          </article>
+        ))}
+      </div> : null}
       {error && <p className="account-error" role="alert">{error}</p>}
       {reports === null && !error && <p className="account-loading"><i className="live-dot" />LOADING PRIVATE REPORTS</p>}
       {reports?.length === 0 && (

@@ -45,6 +45,104 @@ class MockRateLimitDb {
   }
 }
 
+class MockSandboxDb {
+  orders = [];
+  entitlements = new Map();
+
+  prepare(sql) {
+    let values = [];
+    const db = this;
+    const statement = {
+      bind(...nextValues) {
+        values = nextValues;
+        return statement;
+      },
+      async first() {
+        if (sql.includes("FROM sandbox_entitlements WHERE owner_key")) {
+          const owner = String(values[0]);
+          return db.entitlements.get(owner) ?? null;
+        }
+        if (sql.includes("FROM sandbox_orders WHERE owner_key = ? AND id = ?")) {
+          const owner = String(values[0]);
+          const id = String(values[1]);
+          return db.orders.find((order) => order.ownerKey === owner && order.id === id) ?? null;
+        }
+        return null;
+      },
+      async all() {
+        if (!sql.includes("FROM sandbox_orders WHERE owner_key")) return { results: [] };
+        const owner = String(values[0]);
+        const results = db.orders
+          .filter((order) => order.ownerKey === owner)
+          .sort((left, right) => right.createdAt - left.createdAt)
+          .map(({ ownerKey, ...order }) => order);
+        return { results };
+      },
+      async run() {
+        if (sql.includes("INSERT INTO sandbox_orders")) {
+          const [id, ownerKey, reference, plan, reportId, entitlementKey, amountCents, createdAt, updatedAt] = values;
+          db.orders.push({
+            id,
+            ownerKey,
+            reference,
+            plan,
+            reportId,
+            entitlementKey,
+            amountCents,
+            currency: "USD",
+            status: "created",
+            statusDetail: "Awaiting sandbox confirmation.",
+            createdAt,
+            updatedAt,
+            fulfilledAt: null,
+          });
+          return { success: true };
+        }
+        if (sql.includes("SET status = 'processing'")) {
+          const [updatedAt, ownerKey, id] = values;
+          const order = db.orders.find((item) => item.ownerKey === ownerKey && item.id === id);
+          if (order) {
+            order.status = "processing";
+            order.statusDetail = "Simulating authorization and entitlement delivery.";
+            order.updatedAt = updatedAt;
+          }
+          return { success: true };
+        }
+        if (sql.includes("SET status = 'test_paid'")) {
+          const [statusDetail, updatedAt, fulfilledAt, ownerKey, id] = values;
+          const order = db.orders.find((item) => item.ownerKey === ownerKey && item.id === id);
+          if (order) {
+            order.status = "test_paid";
+            order.statusDetail = statusDetail;
+            order.updatedAt = updatedAt;
+            order.fulfilledAt = fulfilledAt;
+          }
+          return { success: true };
+        }
+        if (sql.includes("INSERT INTO sandbox_entitlements")) {
+          const [ownerKey, fullAudit, consultation, updatedAt] = values;
+          const current = db.entitlements.get(String(ownerKey)) ?? { fullAudit: 0, consultation: 0, updatedAt: 0 };
+          db.entitlements.set(String(ownerKey), {
+            fullAudit: Math.max(current.fullAudit, Number(fullAudit)),
+            consultation: Math.max(current.consultation, Number(consultation)),
+            updatedAt,
+          });
+          return { success: true };
+        }
+        return { success: true };
+      },
+    };
+    return statement;
+  }
+
+  async batch(statements) {
+    for (const statement of statements) {
+      await statement.run();
+    }
+    return { success: true };
+  }
+}
+
 test("server-renders the Signal observatory", async () => {
   const worker = await loadWorker("page");
   const response = await worker.fetch(new Request("http://localhost/", {
@@ -99,6 +197,46 @@ test("exposes sandbox status without accepting anonymous orders", async () => {
   }), env, ctx);
   assert.equal(checkout.status, 401);
   assert.match((await checkout.json()).error, /Sign in/i);
+});
+
+test("creates, confirms, and exposes sandbox orders for signed-in users", async () => {
+  const worker = await loadWorker("sandbox-order-lifecycle");
+  const sandboxEnv = { ...env, DB: new MockSandboxDb() };
+  globalThis.__TEST_ENV__ = { DB: sandboxEnv.DB, RATE_LIMIT_SALT: "test-salt" };
+  const headers = { "content-type": "application/json", "oai-authenticated-user-email": "owner@example.com" };
+  try {
+    const created = await worker.fetch(new Request("http://localhost/api/billing/sandbox-checkout/", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ action: "create", plan: "full-audit", reportId: "a".repeat(32) }),
+    }), sandboxEnv, ctx);
+    assert.equal(created.status, 201);
+    const createdPayload = await created.json();
+    assert.equal(createdPayload.order.status, "created");
+    assert.equal(createdPayload.order.reportId, "a".repeat(32));
+    assert.match(createdPayload.order.reference, /^sndb_[a-z0-9]{12}$/i);
+
+    const completed = await worker.fetch(new Request("http://localhost/api/billing/sandbox-checkout/", {
+      method: "POST",
+      headers,
+      body: JSON.stringify({ action: "complete", orderId: createdPayload.order.id }),
+    }), sandboxEnv, ctx);
+    assert.equal(completed.status, 200);
+    const completedPayload = await completed.json();
+    assert.equal(completedPayload.order.status, "test_paid");
+    assert.equal(completedPayload.order.entitlementKey, "full_audit");
+
+    const status = await worker.fetch(new Request("http://localhost/api/billing/status", {
+      headers: { "oai-authenticated-user-email": "owner@example.com" },
+    }), sandboxEnv, ctx);
+    assert.equal(status.status, 200);
+    const statusPayload = await status.json();
+    assert.equal(statusPayload.fullAudit, true);
+    assert.equal(statusPayload.orders.length, 1);
+    assert.equal(statusPayload.orders[0].status, "test_paid");
+  } finally {
+    delete globalThis.__TEST_ENV__;
+  }
 });
 
 test("protects the premium visibility lab API", async () => {
