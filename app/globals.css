@@ -424,6 +424,12 @@ footer > div a:hover { color: var(--signal); }
 .report-summary span { color: rgba(241,238,229,.4); }
 .report-summary strong { margin: auto 0 10px; font-size: clamp(48px,5vw,82px); line-height: .8; letter-spacing: -.08em; font-weight: 520; }
 .report-summary small { color: rgba(241,238,229,.48); }
+.premium-state-strip { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,1fr) auto; gap: 1px; border-bottom: 1px solid var(--line); background: var(--line); }
+.premium-state-strip > div { min-height: 128px; padding: 26px 3.25vw; background: #070908; display: flex; flex-direction: column; justify-content: center; }
+.premium-state-strip span { color: rgba(241,238,229,.36); font: 650 8px var(--font-geist-mono),monospace; letter-spacing: .1em; text-transform: uppercase; }
+.premium-state-strip strong { margin: 10px 0 8px; color: var(--signal); font-size: 28px; letter-spacing: -.06em; }
+.premium-state-strip p { max-width: 620px; margin: 0; color: rgba(241,238,229,.52); font-size: 12px; line-height: 1.55; }
+.premium-state-strip a { align-self: center; min-width: 220px; min-height: 54px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; border-radius: 999px; background: var(--signal); color: var(--ink); font: 700 9px var(--font-geist-mono),monospace; letter-spacing: .08em; text-transform: uppercase; }
 .report-section { padding: 116px 3.25vw 126px; border-bottom: 1px solid var(--line); }
 .report-section-head { display: grid; grid-template-columns: 18% minmax(0,1fr); gap: 44px; margin-bottom: 68px; }
 .report-section-head > span { padding-top: 9px; color: rgba(241,238,229,.42); font: 600 9px var(--font-geist-mono),monospace; letter-spacing: .15em; }
@@ -544,6 +550,27 @@ footer > div a:hover { color: var(--signal); }
 .account-order-list article { min-height: 92px; display: grid; grid-template-columns: minmax(0,1.5fr) 180px 170px 150px auto; gap: 18px; align-items: center; border-bottom: 1px solid var(--line); }
 .account-order-list article > div:first-child { padding-right: 20px; }
 .account-order-list article p { margin: 8px 0 0; color: rgba(241,238,229,.45); font-size: 12px; line-height: 1.5; }
+.order-hero { min-height: 520px; padding: 110px 3.25vw 72px; border-bottom: 1px solid var(--line); background: radial-gradient(circle at 78% 42%,rgba(201,255,71,.12),transparent 24%),#070908; }
+.order-hero h1 { max-width: 1180px; font-size: clamp(64px,8vw,142px); line-height: .84; }
+.order-hero h1 span { color: var(--signal); }
+.order-hero > p:not(.lead-line) { max-width: 700px; margin: 34px 0 0; color: rgba(241,238,229,.56); font-size: 16px; line-height: 1.65; }
+.order-detail { padding: 86px 3.25vw 110px; display: grid; grid-template-columns: minmax(340px,.72fr) minmax(0,1.28fr); gap: 40px; }
+.order-summary-card { padding: 34px; border: 1px solid rgba(201,255,71,.4); background: rgba(7,9,8,.88); box-shadow: 0 30px 90px rgba(0,0,0,.35), inset 0 0 90px rgba(201,255,71,.03); }
+.order-summary-card > span { color: var(--signal); font: 650 9px var(--font-geist-mono),monospace; letter-spacing: .13em; }
+.order-summary-card h2 { margin: 44px 0 12px; font-size: 46px; letter-spacing: -.06em; }
+.order-summary-card > strong { display: block; color: var(--signal); font-size: 76px; letter-spacing: -.08em; }
+.order-summary-card > strong small { color: rgba(241,238,229,.38); font: 600 9px var(--font-geist-mono),monospace; letter-spacing: .08em; text-transform: uppercase; }
+.order-summary-card > p { margin: 28px 0 0; color: rgba(241,238,229,.56); line-height: 1.6; }
+.order-actions { margin-top: 36px; display: grid; gap: 10px; }
+.order-actions a { min-height: 56px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; background: var(--signal); color: var(--ink); font: 700 9px var(--font-geist-mono),monospace; letter-spacing: .08em; text-transform: uppercase; }
+.order-actions a + a { background: var(--paper); }
+.order-metadata .account-history-head { margin-bottom: 34px; }
+.order-metadata .account-history-head.compact { grid-template-columns: 180px 1fr; }
+.order-meta-grid { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
+.order-meta-grid article { min-height: 200px; padding: 28px; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.order-meta-grid span { color: rgba(241,238,229,.38); font: 650 8px var(--font-geist-mono),monospace; letter-spacing: .1em; text-transform: uppercase; }
+.order-meta-grid strong { display: block; margin: 42px 0 16px; font-size: 30px; letter-spacing: -.05em; }
+.order-meta-grid p { max-width: 420px; color: rgba(241,238,229,.52); font-size: 13px; line-height: 1.6; }
 .checkout-page { min-height: 100vh; background: #070908; color: var(--paper); }
 .checkout-page .account-nav > a:last-child { padding: 11px 15px; border: 1px solid rgba(241,238,229,.25); border-radius: 999px; font: 650 9px var(--font-geist-mono),monospace; letter-spacing: .08em; text-transform: uppercase; }
 .checkout-shell { min-height: calc(100vh - 86px); display: grid; grid-template-columns: minmax(0,1.15fr) minmax(420px,.65fr); gap: 70px; align-items: center; padding: 80px 7vw; background: radial-gradient(circle at 72% 42%,rgba(201,255,71,.11),transparent 25%),linear-gradient(rgba(241,238,229,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(241,238,229,.025) 1px,transparent 1px); background-size: auto,56px 56px,56px 56px; }
@@ -831,6 +858,9 @@ footer > div a:hover { color: var(--signal); }
   .report-summary { grid-template-columns: 1fr 1fr; }
   .report-summary > div { min-height: 155px; padding: 22px 18px; }
   .report-summary strong { font-size: 44px; }
+  .premium-state-strip { grid-template-columns: 1fr; }
+  .premium-state-strip > div { min-height: 112px; padding: 24px 18px; }
+  .premium-state-strip a { align-self: flex-start; }
   .report-section { padding: 78px 18px 88px; overflow-x: auto; }
   .report-section-head { margin-bottom: 46px; }
   .report-section-head h2,.report-section-head.compact h2 { font-size: 52px; }
@@ -867,6 +897,11 @@ footer > div a:hover { color: var(--signal); }
   .account-report-list { min-width: 760px; }
   .account-order-list { min-width: 900px; }
   .account-order-list article { grid-template-columns: minmax(260px,1.5fr) 170px 150px 120px auto; }
+  .order-hero { min-height: 440px; padding: 110px 18px 72px; }
+  .order-hero h1 { font-size: 64px; }
+  .order-detail { grid-template-columns: 1fr; padding: 72px 18px 90px; }
+  .order-metadata .account-history-head.compact { grid-template-columns: 1fr; }
+  .order-meta-grid { grid-template-columns: 1fr; }
   .roadmap-grid { grid-template-columns: 1fr; }
   .roadmap-grid > article { min-height: 440px; }
   .roadmap-grid > article > strong { margin-bottom: 45px; }

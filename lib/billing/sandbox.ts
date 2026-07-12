@@ -56,6 +56,11 @@ async function readOrder(owner: string, id: string) {
   `).bind(owner, id).first<SandboxOrderRecord>();
 }
 
+export async function getSandboxOrder(email: string, id: string) {
+  const owner = await ownerKey(email);
+  return readOrder(owner, id);
+}
+
 export async function createSandboxOrder(email: string, plan: SandboxPlan, reportId?: string) {
   const owner = await ownerKey(email);
   const selected = plans[plan];

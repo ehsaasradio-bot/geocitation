@@ -32,6 +32,10 @@ function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
+function formatTimestamp(value: number) {
+  return formatDate(new Date(value).toISOString());
+}
+
 export function AccountClient() {
   const [reports, setReports] = useState<ReportSummary[] | null>(null);
   const [sandbox, setSandbox] = useState<{ fullAudit: boolean; consultation: boolean; orders: SandboxOrder[] } | null>(null);
@@ -60,16 +64,16 @@ export function AccountClient() {
   return (
     <section className="account-history" aria-labelledby="history-title">
       <div className="account-history-head"><span>01 / SAVED EVIDENCE</span><h2 id="history-title">Audit <span>timeline.</span></h2></div>
-      {sandbox && <div className="sandbox-account-strip"><span>PAYMENT SANDBOX / TEST MODE</span><strong>{sandbox.fullAudit ? "FULL AUDIT ACTIVE" : sandbox.consultation ? "CONSULTATION TESTED" : "NO TEST ORDER"}</strong><p>{sandbox.orders.length} sandbox {sandbox.orders.length === 1 ? "order" : "orders"} · {sandbox.orders[0]?.status === "test_paid" ? "Latest payment confirmed" : sandbox.orders[0]?.status === "processing" ? "Sandbox processing" : sandbox.orders[0] ? "Awaiting confirmation" : "No real charges"}</p><Link href="/checkout?plan=full-audit">Open sandbox ↗</Link></div>}
+      {sandbox && <div className="sandbox-account-strip"><span>PAYMENT SANDBOX / TEST MODE</span><strong>{sandbox.fullAudit ? "FULL AUDIT ACTIVE" : sandbox.consultation ? "CONSULTATION TESTED" : "NO TEST ORDER"}</strong><p>{sandbox.orders.length} sandbox {sandbox.orders.length === 1 ? "order" : "orders"} · {sandbox.orders[0]?.status === "test_paid" ? `Latest receipt ${sandbox.orders[0].reference}` : sandbox.orders[0]?.status === "processing" ? "Sandbox processing" : sandbox.orders[0] ? "Awaiting confirmation" : "No real charges"}</p><Link href={sandbox.orders[0] ? `/account/orders/${sandbox.orders[0].id}` : "/checkout?plan=full-audit"}>{sandbox.orders[0] ? "Open latest receipt ↗" : "Open sandbox ↗"}</Link></div>}
       {sandbox?.orders.length ? <div className="account-order-list">
         <div className="account-report-head"><span>Order</span><span>Status</span><span>Plan</span><span>Updated</span><span>Actions</span></div>
         {sandbox.orders.map((order) => (
           <article key={order.id}>
             <div><strong>{order.reference}</strong><p>{order.statusDetail}</p></div>
-            <time dateTime={new Date(order.updatedAt).toISOString()}>{formatDate(new Date(order.updatedAt).toISOString())}</time>
+            <time dateTime={new Date(order.updatedAt).toISOString()}>{formatTimestamp(order.updatedAt)}</time>
             <b>{order.plan === "full-audit" ? "Full Audit" : "Done-For-You"}</b>
             <em>{order.status === "test_paid" ? "Paid" : order.status === "processing" ? "Processing" : "Created"}</em>
-            <div className="account-row-actions">{order.reportId ? <Link href={`/report?id=${order.reportId}`}>Open report ↗</Link> : <Link href="/checkout?plan=full-audit">New sandbox ↗</Link>}{order.entitlementKey === "full_audit" && sandbox.fullAudit && order.reportId ? <Link href={`/lab?report=${order.reportId}`}>Open lab ↗</Link> : <Link href={order.plan === "done-for-you" ? "/contact" : "/checkout?plan=full-audit"}>{order.plan === "done-for-you" ? "Contact us ↗" : "Open sandbox ↗"}</Link>}</div>
+            <div className="account-row-actions"><Link href={`/account/orders/${order.id}`}>Receipt ↗</Link>{order.reportId ? <Link href={`/report?id=${order.reportId}`}>Open report ↗</Link> : <Link href="/checkout?plan=full-audit">New sandbox ↗</Link>}{order.entitlementKey === "full_audit" && sandbox.fullAudit && order.reportId ? <Link href={`/lab?report=${order.reportId}`}>Open lab ↗</Link> : <Link href={order.plan === "done-for-you" ? "/contact" : "/checkout?plan=full-audit"}>{order.plan === "done-for-you" ? "Contact us ↗" : "Open sandbox ↗"}</Link>}</div>
           </article>
         ))}
       </div> : null}

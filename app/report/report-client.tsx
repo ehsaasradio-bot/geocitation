@@ -85,6 +85,7 @@ export function ReportClient() {
   }, [storedAudit]);
   const [remoteResult, setRemoteResult] = useState<AuditResult | null | undefined>(undefined);
   const [premiumUnlocked, setPremiumUnlocked] = useState(false);
+  const [latestOrder, setLatestOrder] = useState<{ id: string; reference: string; status: string; statusDetail: string } | null>(null);
   const reportId = useSyncExternalStore(subscribeToLocation, getReportId, getServerReportId);
   const remoteMode = Boolean(reportId);
 
@@ -98,8 +99,8 @@ export function ReportClient() {
 
   useEffect(() => {
     void fetch("/api/billing/status", { cache: "no-store" })
-      .then(async (response) => response.ok ? response.json() as Promise<{ fullAudit: boolean }> : Promise.reject(new Error("status unavailable")))
-      .then((payload) => setPremiumUnlocked(payload.fullAudit))
+      .then(async (response) => response.ok ? response.json() as Promise<{ fullAudit: boolean; orders?: Array<{ id: string; reference: string; status: string; statusDetail: string }> }> : Promise.reject(new Error("status unavailable")))
+      .then((payload) => { setPremiumUnlocked(payload.fullAudit); setLatestOrder(payload.orders?.[0] ?? null); })
       .catch(() => undefined);
   }, []);
 
@@ -177,6 +178,12 @@ export function ReportClient() {
         <div><span>DISCOVERY</span><strong>{result.metrics.pagesDiscovered}</strong><small>Public URLs found</small></div>
         <div><span>CITABILITY</span><strong>{result.metrics.answerBlocks}</strong><small>Answer-ready blocks</small></div>
         <div><span>ENTITY GRAPH</span><strong>{result.metrics.entities}</strong><small>Named entities mapped</small></div>
+      </section>
+
+      <section className="premium-state-strip">
+        <div><span>PREMIUM STATE</span><strong>{premiumUnlocked ? "FULL AUDIT ACTIVE" : "LAB LOCKED"}</strong><p>{premiumUnlocked ? "Model-specific prompt testing and the 90-day action map are available on this saved report." : "Unlock the premium layer to turn this audit into a tracked sandbox purchase and lab-ready workflow."}</p></div>
+        <div><span>LATEST SANDBOX ORDER</span><strong>{latestOrder?.reference ?? "NONE"}</strong><p>{latestOrder?.statusDetail ?? "No sandbox order is linked to this account yet."}</p></div>
+        <div>{premiumUnlocked && latestOrder ? <Link href={`/account/orders/${latestOrder.id}`}>Open receipt ↗</Link> : <Link href={reportId ? `/checkout?plan=full-audit&report=${reportId}&next=lab` : "/checkout?plan=full-audit"}>{premiumUnlocked ? "Open sandbox history ↗" : "Unlock premium ↗"}</Link>}</div>
       </section>
 
       <section className="report-section report-categories">
@@ -286,7 +293,7 @@ export function ReportClient() {
         <div>
           <p className="lead-line light">{premiumUnlocked ? "SANDBOX ACCESS / ACTIVE" : "SANDBOX / PAYMENT REHEARSAL"}</p>
           <h2>Turn evidence into a <span>90-day action plan.</span></h2>
-          <p>{premiumUnlocked ? "Your test entitlement is active. The 90-day action map above is unlocked without a real charge." : "Run the complete account-to-entitlement flow in test mode. No card fields or real payment processor are connected."}</p>
+          <p>{premiumUnlocked ? `Your test entitlement is active${latestOrder?.reference ? ` under ${latestOrder.reference}` : ""}. The 90-day action map above is unlocked without a real charge.` : "Run the complete account-to-entitlement flow in test mode. No card fields or real payment processor are connected."}</p>
         </div>
         <ul>
           <li>Platform-by-platform prompt and citation tests</li>
