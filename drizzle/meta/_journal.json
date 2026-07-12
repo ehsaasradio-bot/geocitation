@@ -43,6 +43,13 @@
       "when": 1783884600000,
       "tag": "0005_sturdy_micromax",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1783888790980,
+      "tag": "0006_peaceful_warpath",
+      "breakpoints": true
     }
   ]
 }

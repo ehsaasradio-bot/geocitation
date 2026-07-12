@@ -143,6 +143,29 @@ class MockSandboxDb {
   }
 }
 
+class MockInquiryDb {
+  inquiries = [];
+
+  prepare(sql) {
+    let values = [];
+    const db = this;
+    const statement = {
+      bind(...nextValues) {
+        values = nextValues;
+        return statement;
+      },
+      async run() {
+        if (sql.includes("INSERT INTO project_inquiries")) {
+          const [id, name, email, website, market, services, notes, createdAt, updatedAt] = values;
+          db.inquiries.push({ id, name, email, website, market, services, notes, createdAt, updatedAt });
+        }
+        return { success: true };
+      },
+    };
+    return statement;
+  }
+}
+
 test("server-renders the Signal observatory", async () => {
   const worker = await loadWorker("page");
   const response = await worker.fetch(new Request("http://localhost/", {
@@ -319,7 +342,7 @@ test("server-renders the full public information and report routes", async () =>
   const expected = new Map([
     ["/about", /We make invisible AI visibility visible/],
     ["/accessibility", /Readable signals for everyone/],
-    ["/contact", /Project intake opens next phase/],
+    ["/contact", /Open project intake/],
     ["/faq", /Questions answer engines would ask/],
     ["/methodology", /A score you can inspect/],
     ["/privacy", /Report storage/],
@@ -331,6 +354,32 @@ test("server-renders the full public information and report routes", async () =>
     const response = await worker.fetch(new Request(`http://localhost${path}`, { headers: { accept: "text/html" } }), env, ctx);
     assert.equal(response.status, 200, `${path} should render`);
     assert.match(await response.text(), pattern);
+  }
+});
+
+test("accepts a same-origin done-for-you project intake", async () => {
+  const worker = await loadWorker("project-intake");
+  const inquiryEnv = { ...env, DB: new MockInquiryDb() };
+  globalThis.__TEST_ENV__ = { DB: inquiryEnv.DB, RATE_LIMIT_SALT: "test-salt" };
+  try {
+    const response = await worker.fetch(new Request("http://localhost/api/inquiries", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        name: "Mubashir",
+        email: "mubashir@example.com",
+        website: "https://example.com",
+        market: "B2B SaaS",
+        services: "Audit, schema, answer-first rewrites",
+        notes: "Need GEO help for product pages and docs.",
+      }),
+    }), inquiryEnv, ctx);
+
+    assert.equal(response.status, 201);
+    const payload = await response.json();
+    assert.ok(payload.inquiry.id);
+  } finally {
+    delete globalThis.__TEST_ENV__;
   }
 });
 

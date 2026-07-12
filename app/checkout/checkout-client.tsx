@@ -31,9 +31,10 @@ export function CheckoutClient({ plan, email, reportId, next }: { plan: SandboxP
   const selected = planCopy[plan];
   const primaryHref = useMemo(() => {
     if (plan === "full-audit" && reportId && next === "lab") return `/lab?report=${reportId}`;
+    if (plan === "done-for-you") return "/contact#intake";
     return "/account";
   }, [next, plan, reportId]);
-  const primaryLabel = primaryHref.startsWith("/lab?") ? "Open visibility lab" : "Open account";
+  const primaryLabel = primaryHref.startsWith("/lab?") ? "Open visibility lab" : primaryHref.startsWith("/contact") ? "Open project intake" : "Open account";
   const orderHref = order ? `/account/orders/${order.id}` : "/account";
 
   const createOrder = async () => {
@@ -87,7 +88,7 @@ export function CheckoutClient({ plan, email, reportId, next }: { plan: SandboxP
           {!order ? <button type="button" onClick={() => void createOrder()} disabled={state === "creating"}>{state === "creating" ? "Preparing sandbox order…" : "Create sandbox order"}<span>↗</span></button> : <button type="button" onClick={() => void completeOrder()} disabled={state === "processing"}>{state === "processing" ? "Confirming sandbox payment…" : "Confirm sandbox payment"}<span>↗</span></button>}
           {(state === "review" || (state === "error" && order)) && <p role="status">Review the test order details above, then simulate payment confirmation to unlock access.</p>}
           {state === "error" && <p role="alert">{order ? "Sandbox confirmation did not finish. Please retry the test payment." : "The sandbox payment flow could not continue. Please try again."}</p>}
-        </> : <div className="checkout-success"><i>✓</i><span>TEST ORDER COMPLETE</span><h2>No payment was processed.</h2><p>{primaryHref.startsWith("/lab?") ? "Your sandbox entitlement is active. The selected saved report can now open the visibility lab." : "Your sandbox entitlement is active and recorded in your private account."}</p><dl className="checkout-receipt"><div><dt>Order ref</dt><dd>{order?.reference}</dd></div><div><dt>Status</dt><dd>{order?.statusDetail}</dd></div><div><dt>Entitlement</dt><dd>{order?.entitlementKey === "full_audit" ? "Full Audit" : "Consultation"}</dd></div></dl><Link href={primaryHref}>{primaryLabel} <b>↗</b></Link><Link href={orderHref}>Open sandbox receipt <b>↗</b></Link><Link href={reportId ? `/report?id=${reportId}` : "/report"}>{reportId ? "Return to report" : "View latest report"} <b>↗</b></Link></div>}
+        </> : <div className="checkout-success"><i>✓</i><span>TEST ORDER COMPLETE</span><h2>No payment was processed.</h2><p>{primaryHref.startsWith("/lab?") ? "Your sandbox entitlement is active. The selected saved report can now open the visibility lab." : primaryHref.startsWith("/contact") ? "Your sandbox consultation entitlement is active. You can now send the full done-for-you project intake." : "Your sandbox entitlement is active and recorded in your private account."}</p><dl className="checkout-receipt"><div><dt>Order ref</dt><dd>{order?.reference}</dd></div><div><dt>Status</dt><dd>{order?.statusDetail}</dd></div><div><dt>Entitlement</dt><dd>{order?.entitlementKey === "full_audit" ? "Full Audit" : "Consultation"}</dd></div></dl><Link href={primaryHref}>{primaryLabel} <b>↗</b></Link><Link href={orderHref}>Open sandbox receipt <b>↗</b></Link><Link href={reportId ? `/report?id=${reportId}` : "/report"}>{reportId ? "Return to report" : "View latest report"} <b>↗</b></Link></div>}
       </div>
     </section>
   );

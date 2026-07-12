@@ -52,7 +52,7 @@ const landingFaqs = [
   },
   {
     question: "What happens after the free score?",
-    answer: "You can inspect the evidence report during this private beta. Payment for deeper platform tests and the 90-day plan opens in the next phase.",
+    answer: "You can inspect the evidence report during this private beta. The sandbox now lets you rehearse deeper platform tests and the 90-day plan safely before real payments go live.",
   },
 ];
 
@@ -66,13 +66,13 @@ type ScanGraphProps = {
 };
 
 function AgentCount() {
-  const [count, setCount] = useState(7);
+  const [count, setCount] = useState(94);
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const nextCount = () => setCount((current) => {
-      let next = Math.floor(Math.random() * 8) + 3;
-      if (next === current) next = next === 10 ? 3 : next + 1;
+      let next = Math.floor(Math.random() * 11) + 90;
+      if (next === current) next = next === 100 ? 90 : next + 1;
       return next;
     });
 
@@ -80,7 +80,7 @@ function AgentCount() {
     return () => window.clearInterval(timer);
   }, []);
 
-  return <strong className="agent-count">{count}</strong>;
+  return <strong className="agent-count">{count}%</strong>;
 }
 
 function ScanGraph({ phase, running, complete, domain, pageNames, nodeTones }: ScanGraphProps) {
@@ -753,7 +753,7 @@ export default function Home() {
               <li>Priority support</li>
             </ul>
             <small className="price-note">Final quote depends on scope and site complexity.</small>
-            <a href="/checkout?plan=done-for-you">Test consultation order <span>↗</span></a>
+            <a href="/contact#intake">Start project intake <span>↗</span></a>
           </article>
         </div>
       </section>

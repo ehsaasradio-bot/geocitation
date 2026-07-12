@@ -64,6 +64,27 @@ export const sandboxEntitlements = sqliteTable(
   },
 );
 
+export const projectInquiries = sqliteTable(
+  "project_inquiries",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    email: text("email").notNull(),
+    website: text("website").notNull(),
+    market: text("market").notNull(),
+    services: text("services").notNull(),
+    notes: text("notes").notNull(),
+    status: text("status").notNull().default("new"),
+    createdAt: integer("created_at").notNull(),
+    updatedAt: integer("updated_at").notNull(),
+  },
+  (table) => [
+    index("project_inquiries_created_idx").on(table.createdAt),
+    index("project_inquiries_status_created_idx").on(table.status, table.createdAt),
+    index("project_inquiries_email_created_idx").on(table.email, table.createdAt),
+  ],
+);
+
 export const promptObservations = sqliteTable(
   "prompt_observations",
   {

@@ -73,7 +73,7 @@ export function AccountClient() {
             <time dateTime={new Date(order.updatedAt).toISOString()}>{formatTimestamp(order.updatedAt)}</time>
             <b>{order.plan === "full-audit" ? "Full Audit" : "Done-For-You"}</b>
             <em>{order.status === "test_paid" ? "Paid" : order.status === "processing" ? "Processing" : "Created"}</em>
-            <div className="account-row-actions"><Link href={`/account/orders/${order.id}`}>Receipt ↗</Link>{order.reportId ? <Link href={`/report?id=${order.reportId}`}>Open report ↗</Link> : <Link href="/checkout?plan=full-audit">New sandbox ↗</Link>}{order.entitlementKey === "full_audit" && sandbox.fullAudit && order.reportId ? <Link href={`/lab?report=${order.reportId}`}>Open lab ↗</Link> : <Link href={order.plan === "done-for-you" ? "/contact" : "/checkout?plan=full-audit"}>{order.plan === "done-for-you" ? "Contact us ↗" : "Open sandbox ↗"}</Link>}</div>
+            <div className="account-row-actions"><Link href={`/account/orders/${order.id}`}>Receipt ↗</Link>{order.reportId ? <Link href={`/report?id=${order.reportId}`}>Open report ↗</Link> : <Link href="/checkout?plan=full-audit">New sandbox ↗</Link>}{order.entitlementKey === "full_audit" && sandbox.fullAudit && order.reportId ? <Link href={`/lab?report=${order.reportId}`}>Open lab ↗</Link> : <Link href={order.plan === "done-for-you" ? "/contact#intake" : "/checkout?plan=full-audit"}>{order.plan === "done-for-you" ? "Project intake ↗" : "Open sandbox ↗"}</Link>}</div>
           </article>
         ))}
       </div> : null}

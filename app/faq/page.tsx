@@ -11,7 +11,7 @@ const faqs = [
   ["Is this the same as SEO?", "Not exactly. SEO focuses on ranking in search results. SIGNAL° focuses on whether answer engines can read your site, reason about it and confidently mention it in generated answers."],
   ["What is GEO?", "GEO means Generative Engine Optimization: shaping your public website so AI answer systems can access accurate, attributable and citation-ready information."],
   ["Do you guarantee AI citations?", "No honest audit can guarantee citations. SIGNAL° shows the barriers and opportunities that influence whether AI systems can confidently use your content."],
-  ["What do I get in the free score?", "You get a visibility snapshot, crawler-access checks, priority warnings and a device-local evidence report. Payment for model-specific platform tests and the prioritized roadmap opens in the next phase."],
+  ["What do I get in the free score?", "You get a visibility snapshot, crawler-access checks, priority warnings and a device-local evidence report. The sandbox now lets you rehearse premium unlocks safely before real payments are connected."],
   ["Can you fix the issues for us?", "Yes. The Done-For-You option covers technical fixes, schema, llms.txt, answer-first content structure and ongoing monitoring."],
 ];
 

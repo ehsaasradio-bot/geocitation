@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { InfoPage } from "../info-pages";
+import { ContactIntakeForm } from "./contact-intake-form";
 
 export const metadata: Metadata = {
   title: "Contact Us — SIGNAL°",
@@ -25,9 +26,10 @@ export default function ContactPage() {
           <span>PROJECT INQUIRIES</span>
           <h2>Need the full build?</h2>
           <p>For Done-For-You GEO, prepare your domain, target market, priority products or services and any current analytics or SEO reports.</p>
-          <button type="button" disabled>Project intake opens next phase <span>↗</span></button>
+          <Link href="#intake">Open project intake <span>↗</span></Link>
         </div>
       </div>
+      <ContactIntakeForm />
     </InfoPage>
   );
 }
