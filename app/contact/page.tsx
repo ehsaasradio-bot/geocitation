@@ -1,14 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { InfoPage } from "../info-pages";
+import { getChatGPTUser } from "../chatgpt-auth";
 import { ContactIntakeForm } from "./contact-intake-form";
+import { getSandboxOrder } from "../../lib/billing/sandbox";
 
 export const metadata: Metadata = {
   title: "Contact Us — SIGNAL°",
   description: "Contact SIGNAL° for AI visibility audits, GEO implementation and website citation readiness.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage({ searchParams }: { searchParams: Promise<{ order?: string; website?: string }> }) {
+  const params = await searchParams;
+  const user = await getChatGPTUser();
+  const orderId = typeof params.order === "string" && params.order ? params.order : null;
+  const initialWebsite = typeof params.website === "string" ? params.website.slice(0, 240) : "";
+  const linkedOrder = user && orderId ? await getSandboxOrder(user.email, orderId) : null;
+
   return (
     <InfoPage
       eyebrow="CONTACT / START A SIGNAL"
@@ -29,7 +37,13 @@ export default function ContactPage() {
           <Link href="#intake">Open project intake <span>↗</span></Link>
         </div>
       </div>
-      <ContactIntakeForm />
+      <ContactIntakeForm
+        initialEmail={user?.email}
+        initialName={user?.fullName ?? user?.displayName ?? ""}
+        initialWebsite={initialWebsite}
+        orderId={linkedOrder?.plan === "done-for-you" ? linkedOrder.id : null}
+        orderReference={linkedOrder?.plan === "done-for-you" ? linkedOrder.reference : null}
+      />
     </InfoPage>
   );
 }

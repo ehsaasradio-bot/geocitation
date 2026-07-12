@@ -31,9 +31,9 @@ export function CheckoutClient({ plan, email, reportId, next }: { plan: SandboxP
   const selected = planCopy[plan];
   const primaryHref = useMemo(() => {
     if (plan === "full-audit" && reportId && next === "lab") return `/lab?report=${reportId}`;
-    if (plan === "done-for-you") return "/contact#intake";
+    if (plan === "done-for-you") return order ? `/contact?order=${order.id}#intake` : "/contact#intake";
     return "/account";
-  }, [next, plan, reportId]);
+  }, [next, order, plan, reportId]);
   const primaryLabel = primaryHref.startsWith("/lab?") ? "Open visibility lab" : primaryHref.startsWith("/contact") ? "Open project intake" : "Open account";
   const orderHref = order ? `/account/orders/${order.id}` : "/account";
 

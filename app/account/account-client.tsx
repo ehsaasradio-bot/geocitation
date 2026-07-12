@@ -28,6 +28,16 @@ type SandboxOrder = {
   fulfilledAt: number | null;
 };
 
+type InquirySummary = {
+  id: string;
+  orderId: string | null;
+  website: string;
+  market: string;
+  services: string;
+  status: string;
+  createdAt: number;
+};
+
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
@@ -39,6 +49,7 @@ function formatTimestamp(value: number) {
 export function AccountClient() {
   const [reports, setReports] = useState<ReportSummary[] | null>(null);
   const [sandbox, setSandbox] = useState<{ fullAudit: boolean; consultation: boolean; orders: SandboxOrder[] } | null>(null);
+  const [inquiries, setInquiries] = useState<InquirySummary[] | null>(null);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -53,6 +64,13 @@ export function AccountClient() {
       .then(async (response) => response.json() as Promise<{ fullAudit: boolean; consultation: boolean; orders: SandboxOrder[] }>)
       .then(setSandbox)
       .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    void fetch("/api/inquiries", { cache: "no-store" })
+      .then(async (response) => response.ok ? response.json() as Promise<{ inquiries: InquirySummary[] }> : Promise.reject(new Error("Your project intake history could not be loaded.")))
+      .then((payload) => setInquiries(payload.inquiries))
+      .catch(() => setInquiries([]));
   }, []);
 
   const remove = async (id: string) => {
@@ -74,6 +92,21 @@ export function AccountClient() {
             <b>{order.plan === "full-audit" ? "Full Audit" : "Done-For-You"}</b>
             <em>{order.status === "test_paid" ? "Paid" : order.status === "processing" ? "Processing" : "Created"}</em>
             <div className="account-row-actions"><Link href={`/account/orders/${order.id}`}>Receipt ↗</Link>{order.reportId ? <Link href={`/report?id=${order.reportId}`}>Open report ↗</Link> : <Link href="/checkout?plan=full-audit">New sandbox ↗</Link>}{order.entitlementKey === "full_audit" && sandbox.fullAudit && order.reportId ? <Link href={`/lab?report=${order.reportId}`}>Open lab ↗</Link> : <Link href={order.plan === "done-for-you" ? "/contact#intake" : "/checkout?plan=full-audit"}>{order.plan === "done-for-you" ? "Project intake ↗" : "Open sandbox ↗"}</Link>}</div>
+          </article>
+        ))}
+      </div> : null}
+      {inquiries?.length ? <div className="account-order-list account-inquiry-list">
+        <div className="account-report-head"><span>Inquiry</span><span>Status</span><span>Market</span><span>Created</span><span>Actions</span></div>
+        {inquiries.map((inquiry) => (
+          <article key={inquiry.id}>
+            <div><strong>{inquiry.website}</strong><p>{inquiry.services}</p></div>
+            <time dateTime={new Date(inquiry.createdAt).toISOString()}>{formatTimestamp(inquiry.createdAt)}</time>
+            <b>{inquiry.market}</b>
+            <em>{inquiry.status}</em>
+            <div className="account-row-actions">
+              <Link href={`/contact?website=${encodeURIComponent(inquiry.website)}${inquiry.orderId ? `&order=${encodeURIComponent(inquiry.orderId)}` : ""}#intake`}>Update intake ↗</Link>
+              {inquiry.orderId ? <Link href={`/account/orders/${inquiry.orderId}`}>Linked receipt ↗</Link> : <Link href="/contact#intake">Open intake ↗</Link>}
+            </div>
           </article>
         ))}
       </div> : null}

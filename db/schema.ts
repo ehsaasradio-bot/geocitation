@@ -68,6 +68,8 @@ export const projectInquiries = sqliteTable(
   "project_inquiries",
   {
     id: text("id").primaryKey(),
+    ownerKey: text("owner_key"),
+    orderId: text("order_id"),
     name: text("name").notNull(),
     email: text("email").notNull(),
     website: text("website").notNull(),
@@ -82,6 +84,8 @@ export const projectInquiries = sqliteTable(
     index("project_inquiries_created_idx").on(table.createdAt),
     index("project_inquiries_status_created_idx").on(table.status, table.createdAt),
     index("project_inquiries_email_created_idx").on(table.email, table.createdAt),
+    index("project_inquiries_owner_created_idx").on(table.ownerKey, table.createdAt),
+    index("project_inquiries_order_created_idx").on(table.orderId, table.createdAt),
   ],
 );
 

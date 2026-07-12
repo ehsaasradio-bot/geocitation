@@ -1,10 +1,18 @@
-import { createProjectInquiry } from "../../../lib/inquiries/store";
+import { createProjectInquiry, listProjectInquiries } from "../../../lib/inquiries/store";
+import { getChatGPTUser } from "../../chatgpt-auth";
 
 function clean(value: unknown, limit: number) {
   return typeof value === "string" ? value.trim().slice(0, limit) : "";
 }
 
+export async function GET() {
+  const user = await getChatGPTUser();
+  if (!user) return Response.json({ error: "Sign in to view project inquiries." }, { status: 401 });
+  return Response.json({ inquiries: await listProjectInquiries(user.email) }, { headers: { "Cache-Control": "no-store" } });
+}
+
 export async function POST(request: Request) {
+  const user = await getChatGPTUser();
   const requestUrl = new URL(request.url);
   const origin = request.headers.get("origin");
   const fetchSite = request.headers.get("sec-fetch-site");
@@ -32,6 +40,7 @@ export async function POST(request: Request) {
   const market = clean(body.market, 160);
   const services = clean(body.services, 400);
   const notes = clean(body.notes, 4_000);
+  const orderId = clean(body.orderId, 120) || null;
 
   if (!name || !email || !website || !market || !services || !notes) {
     return Response.json({ error: "Every intake field is required." }, { status: 400 });
@@ -47,6 +56,26 @@ export async function POST(request: Request) {
     return Response.json({ error: "Use a valid website URL." }, { status: 400 });
   }
 
-  const inquiry = await createProjectInquiry({ name, email, website, market, services, notes });
+  let inquiry;
+  try {
+    inquiry = await createProjectInquiry({
+      accountEmail: user?.email ?? null,
+      name,
+      email,
+      website,
+      market,
+      services,
+      notes,
+      orderId,
+    });
+  } catch (error) {
+    if (error instanceof Error && error.message === "UNKNOWN_CONSULTATION_ORDER") {
+      return Response.json({ error: "Use a valid consultation order before linking intake." }, { status: 400 });
+    }
+    if (error instanceof Error && error.message === "ORDER_LINK_REQUIRES_SIGN_IN") {
+      return Response.json({ error: "Sign in before linking an order to intake." }, { status: 401 });
+    }
+    throw error;
+  }
   return Response.json({ inquiry }, { status: 201, headers: { "Cache-Control": "no-store" } });
 }

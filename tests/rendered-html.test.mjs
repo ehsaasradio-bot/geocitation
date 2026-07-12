@@ -154,10 +154,21 @@ class MockInquiryDb {
         values = nextValues;
         return statement;
       },
+      async all() {
+        if (sql.includes("FROM project_inquiries WHERE owner_key = ?")) {
+          const ownerKey = String(values[0]);
+          return {
+            results: db.inquiries
+              .filter((inquiry) => inquiry.ownerKey === ownerKey)
+              .sort((left, right) => right.createdAt - left.createdAt),
+          };
+        }
+        return { results: [] };
+      },
       async run() {
         if (sql.includes("INSERT INTO project_inquiries")) {
-          const [id, name, email, website, market, services, notes, createdAt, updatedAt] = values;
-          db.inquiries.push({ id, name, email, website, market, services, notes, createdAt, updatedAt });
+          const [id, ownerKey, orderId, name, email, website, market, services, notes, createdAt, updatedAt] = values;
+          db.inquiries.push({ id, ownerKey, orderId, name, email, website, market, services, notes, createdAt, updatedAt, status: "new" });
         }
         return { success: true };
       },
@@ -364,7 +375,7 @@ test("accepts a same-origin done-for-you project intake", async () => {
   try {
     const response = await worker.fetch(new Request("http://localhost/api/inquiries", {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", "oai-authenticated-user-email": "mubashir@example.com" },
       body: JSON.stringify({
         name: "Mubashir",
         email: "mubashir@example.com",
@@ -378,6 +389,13 @@ test("accepts a same-origin done-for-you project intake", async () => {
     assert.equal(response.status, 201);
     const payload = await response.json();
     assert.ok(payload.inquiry.id);
+
+    const listed = await worker.fetch(new Request("http://localhost/api/inquiries", {
+      headers: { "oai-authenticated-user-email": "mubashir@example.com" },
+    }), inquiryEnv, ctx);
+    assert.equal(listed.status, 200);
+    const listedPayload = await listed.json();
+    assert.equal(listedPayload.inquiries.length, 1);
   } finally {
     delete globalThis.__TEST_ENV__;
   }

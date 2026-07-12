@@ -387,6 +387,8 @@ footer > div a:hover { color: var(--signal); }
 .intake-copy ul { margin: 36px 0 0; padding: 0; list-style: none; display: grid; gap: 12px; }
 .intake-copy li { color: rgba(241,238,229,.7); font-size: 13px; line-height: 1.5; }
 .intake-copy li::before { content: "•"; color: var(--signal); margin-right: 10px; }
+.intake-order-note { margin-top: 24px !important; color: rgba(241,238,229,.7) !important; font-size: 13px !important; }
+.intake-order-note strong { color: var(--signal); }
 .intake-form { display: grid; gap: 18px; }
 .intake-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .intake-form label { display: grid; gap: 10px; }

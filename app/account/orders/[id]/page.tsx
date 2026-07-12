@@ -24,6 +24,7 @@ export default async function SandboxOrderPage({ params }: { params: Promise<{ i
 
   const reportHref = order.reportId ? `/report?id=${order.reportId}` : "/account";
   const labHref = order.reportId && order.entitlementKey === "full_audit" && order.status === "test_paid" ? `/lab?report=${order.reportId}` : null;
+  const intakeHref = order.plan === "done-for-you" ? `/contact?order=${order.id}#intake` : null;
 
   return (
     <main className="account-page" id="main-content">
@@ -45,8 +46,8 @@ export default async function SandboxOrderPage({ params }: { params: Promise<{ i
           <strong>{(order.amountCents / 100).toLocaleString("en-US", { style: "currency", currency: order.currency })}<small> sandbox</small></strong>
           <p>{order.statusDetail}</p>
           <div className="order-actions">
-            <Link href={reportHref}>Open linked report ↗</Link>
-            {labHref ? <Link href={labHref}>Open visibility lab ↗</Link> : <Link href="/account">Back to account ↗</Link>}
+            <Link href={reportHref}>{order.reportId ? "Open linked report ↗" : "Back to account ↗"}</Link>
+            {labHref ? <Link href={labHref}>Open visibility lab ↗</Link> : intakeHref ? <Link href={intakeHref}>Open project intake ↗</Link> : <Link href="/account">Back to account ↗</Link>}
           </div>
         </div>
 
@@ -58,7 +59,7 @@ export default async function SandboxOrderPage({ params }: { params: Promise<{ i
             <article><span>Created</span><strong>{formatDate(order.createdAt)}</strong><p>The order was opened in sandbox mode and stored against your signed-in account.</p></article>
             <article><span>Confirmed</span><strong>{formatDate(order.fulfilledAt)}</strong><p>Sandbox payment confirmation activates the entitlement without moving money.</p></article>
             <article><span>Linked Report</span><strong>{order.reportId ?? "No report linked"}</strong><p>Orders created from report or lab flows preserve the report connection for follow-through.</p></article>
-            <article><span>Message</span><strong>Sandbox confirmation memo</strong><p>No external email was sent. This receipt page acts as the production-style confirmation surface for now.</p></article>
+            <article><span>Message</span><strong>{order.plan === "done-for-you" ? "Consultation intake ready" : "Sandbox confirmation memo"}</strong><p>{order.plan === "done-for-you" ? "Use the linked intake form to submit project scope against this consultation receipt. No external email was sent yet." : "No external email was sent. This receipt page acts as the production-style confirmation surface for now."}</p></article>
           </div>
         </div>
       </section>

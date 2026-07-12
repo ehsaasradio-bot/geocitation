@@ -2,17 +2,29 @@
 
 import { FormEvent, useState } from "react";
 
-const initialState = {
-  name: "",
-  email: "",
-  website: "",
-  market: "",
-  services: "",
-  notes: "",
+type ContactIntakeFormProps = {
+  initialEmail?: string;
+  initialName?: string;
+  initialWebsite?: string;
+  orderId?: string | null;
+  orderReference?: string | null;
 };
 
-export function ContactIntakeForm() {
-  const [form, setForm] = useState(initialState);
+export function ContactIntakeForm({
+  initialEmail = "",
+  initialName = "",
+  initialWebsite = "",
+  orderId = null,
+  orderReference = null,
+}: ContactIntakeFormProps) {
+  const [form, setForm] = useState({
+    name: initialName,
+    email: initialEmail,
+    website: initialWebsite,
+    market: "",
+    services: "",
+    notes: "",
+  });
   const [status, setStatus] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [message, setMessage] = useState("");
 
@@ -25,13 +37,15 @@ export function ContactIntakeForm() {
       const response = await fetch("/api/inquiries", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({ ...form, orderId }),
       });
       const payload = await response.json().catch(() => null) as { error?: string; inquiry?: { id: string } } | null;
       if (!response.ok || !payload?.inquiry) throw new Error(payload?.error ?? "The intake request could not be sent.");
       setStatus("done");
-      setMessage("Project intake received. We now have the essentials to review your website, goals and GEO scope.");
-      setForm(initialState);
+      setMessage(orderReference
+        ? `Project intake received and linked to consultation receipt ${orderReference}.`
+        : "Project intake received. We now have the essentials to review your website, goals and GEO scope.");
+      setForm((current) => ({ ...current, market: "", services: "", notes: "" }));
     } catch (error) {
       setStatus("error");
       setMessage(error instanceof Error ? error.message : "The intake request could not be sent.");
@@ -50,6 +64,7 @@ export function ContactIntakeForm() {
           <li>Technical or content constraints</li>
           <li>What success should look like</li>
         </ul>
+        {orderReference ? <p className="intake-order-note">Linked to consultation receipt <strong>{orderReference}</strong>.</p> : null}
       </div>
 
       <form className="intake-form" onSubmit={(event) => void submit(event)}>
