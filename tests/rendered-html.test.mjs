@@ -196,6 +196,16 @@ test("server-renders the full public information and report routes", async () =>
   }
 });
 
+test("protects sandbox checkout behind sign-in even with return params", async () => {
+  const worker = await loadWorker("protected-checkout");
+  const response = await worker.fetch(new Request("http://localhost/checkout?plan=full-audit&report=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa&next=lab", {
+    headers: { accept: "text/html" },
+  }), env, ctx);
+
+  assert.equal(response.status, 307);
+  assert.match(response.headers.get("location") ?? "", /\/signin-with-chatgpt\?return_to=%2Fcheckout%3Fplan%3Dfull-audit/);
+});
+
 test("reports crawler policy as unknown when robots cannot be verified", async () => {
   const originalFetch = globalThis.fetch;
   globalThis.fetch = async (input) => {

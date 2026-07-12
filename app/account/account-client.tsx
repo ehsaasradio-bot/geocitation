@@ -59,7 +59,7 @@ export function AccountClient() {
             <time dateTime={report.scannedAt}>{formatDate(report.scannedAt)}</time>
             <b>{report.grade}</b>
             <em>{report.score}</em>
-            <div className="account-row-actions"><Link href={`/report?id=${report.id}`}>Open report ↗</Link>{sandbox?.fullAudit && <Link href={`/lab?report=${report.id}`}>Test prompts ↗</Link>}<button type="button" onClick={() => void remove(report.id)}>Remove</button></div>
+            <div className="account-row-actions"><Link href={`/report?id=${report.id}`}>Open report ↗</Link>{sandbox?.fullAudit ? <Link href={`/lab?report=${report.id}`}>Test prompts ↗</Link> : <Link href={`/checkout?plan=full-audit&report=${report.id}&next=lab`}>Unlock lab ↗</Link>}<button type="button" onClick={() => void remove(report.id)}>Remove</button></div>
           </article>
         ))}
       </div>}

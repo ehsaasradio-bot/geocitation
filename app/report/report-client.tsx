@@ -294,7 +294,7 @@ export function ReportClient() {
           <li>Copy-ready schema, llms.txt and answer blocks</li>
           <li>Prioritized 30 / 60 / 90-day roadmap</li>
         </ul>
-        <Link href={premiumUnlocked ? "/account" : "/checkout?plan=full-audit"}>{premiumUnlocked ? "View sandbox order" : "Test sandbox checkout"} <span>↗</span></Link>
+        <Link href={premiumUnlocked ? "/account" : reportId ? `/checkout?plan=full-audit&report=${reportId}&next=lab` : "/checkout?plan=full-audit"}>{premiumUnlocked ? "View sandbox order" : "Test sandbox checkout"} <span>↗</span></Link>
       </section>
 
       <footer className="report-footer">
