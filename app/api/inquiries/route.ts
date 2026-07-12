@@ -1,4 +1,5 @@
 import { createProjectInquiry, listProjectInquiries } from "../../../lib/inquiries/store";
+import { currentAdminUser } from "../../../lib/admin/access";
 import { getChatGPTUser } from "../../chatgpt-auth";
 
 function clean(value: unknown, limit: number) {
@@ -6,9 +7,14 @@ function clean(value: unknown, limit: number) {
 }
 
 export async function GET() {
+  const admin = await currentAdminUser();
+  if (admin) {
+    const { listAllProjectInquiries } = await import("../../../lib/inquiries/store");
+    return Response.json({ inquiries: await listAllProjectInquiries(), admin: true }, { headers: { "Cache-Control": "no-store" } });
+  }
   const user = await getChatGPTUser();
   if (!user) return Response.json({ error: "Sign in to view project inquiries." }, { status: 401 });
-  return Response.json({ inquiries: await listProjectInquiries(user.email) }, { headers: { "Cache-Control": "no-store" } });
+  return Response.json({ inquiries: await listProjectInquiries(user.email), admin: false }, { headers: { "Cache-Control": "no-store" } });
 }
 
 export async function POST(request: Request) {

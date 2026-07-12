@@ -77,6 +77,8 @@ export const projectInquiries = sqliteTable(
     services: text("services").notNull(),
     notes: text("notes").notNull(),
     status: text("status").notNull().default("new"),
+    reviewerEmail: text("reviewer_email"),
+    reviewedAt: integer("reviewed_at"),
     createdAt: integer("created_at").notNull(),
     updatedAt: integer("updated_at").notNull(),
   },

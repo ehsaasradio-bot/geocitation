@@ -22,6 +22,8 @@ Phase 5 adds a credential-gated OpenAI Responses API adapter with web search, cl
 
 Phase 6 completes the sandbox-era premium funnel: receipt tracking, context-preserving sign-in handoff, done-for-you project intake, and account-visible intake history linked to consultation orders where available.
 
+Phase 7 begins the production operations layer: an admin-only inquiry queue, protected review access via `SIGNAL_ADMIN_EMAILS`, and tracked status changes for done-for-you project requests.
+
 Phase 1 production protection uses D1-backed salted rate-limit identifiers, bounded crawl budgets, same-origin request enforcement and centralized security headers.
 
 ## Local development

@@ -58,6 +58,7 @@ export async function createProjectInquiry(input: InquiryInput) {
 export type InquirySummary = {
   id: string;
   orderId: string | null;
+  ownerKey?: string | null;
   name: string;
   email: string;
   website: string;
@@ -65,6 +66,8 @@ export type InquirySummary = {
   services: string;
   notes: string;
   status: string;
+  reviewerEmail: string | null;
+  reviewedAt: number | null;
   createdAt: number;
   updatedAt: number;
 };
@@ -72,8 +75,33 @@ export type InquirySummary = {
 export async function listProjectInquiries(email: string): Promise<InquirySummary[]> {
   const owner = await ownerKey(email);
   const rows = await (await database()).prepare(`
-    SELECT id, order_id AS orderId, name, email, website, market, services, notes, status, created_at AS createdAt, updated_at AS updatedAt
+    SELECT id, order_id AS orderId, name, email, website, market, services, notes, status, reviewer_email AS reviewerEmail, reviewed_at AS reviewedAt, created_at AS createdAt, updated_at AS updatedAt
     FROM project_inquiries WHERE owner_key = ? ORDER BY created_at DESC LIMIT 20
   `).bind(owner).all<InquirySummary>();
   return rows.results;
+}
+
+export async function listAllProjectInquiries(): Promise<InquirySummary[]> {
+  const rows = await (await database()).prepare(`
+    SELECT id, owner_key AS ownerKey, order_id AS orderId, name, email, website, market, services, notes, status, reviewer_email AS reviewerEmail, reviewed_at AS reviewedAt, created_at AS createdAt, updated_at AS updatedAt
+    FROM project_inquiries ORDER BY created_at DESC LIMIT 100
+  `).all<InquirySummary>();
+  return rows.results;
+}
+
+const inquiryStatuses = ["new", "reviewing", "scoped", "closed"] as const;
+export type InquiryStatus = (typeof inquiryStatuses)[number];
+
+export function isInquiryStatus(value: unknown): value is InquiryStatus {
+  return typeof value === "string" && inquiryStatuses.includes(value as InquiryStatus);
+}
+
+export async function updateProjectInquiryStatus(id: string, status: InquiryStatus, reviewerEmail: string) {
+  const now = Date.now();
+  const result = await (await database()).prepare(`
+    UPDATE project_inquiries
+    SET status = ?, reviewer_email = ?, reviewed_at = ?, updated_at = ?
+    WHERE id = ?
+  `).bind(status, reviewerEmail, now, now, id).run();
+  return Number(result.meta.changes ?? 0) > 0;
 }

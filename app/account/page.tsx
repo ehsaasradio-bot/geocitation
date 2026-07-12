@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { chatGPTSignOutPath, requireChatGPTUser } from "../chatgpt-auth";
 import { AccountClient } from "./account-client";
+import { isSignalAdmin } from "../../lib/admin/access";
 
 export const dynamic = "force-dynamic";
 
@@ -12,11 +13,12 @@ export const metadata: Metadata = {
 
 export default async function AccountPage() {
   const user = await requireChatGPTUser("/account");
+  const admin = await isSignalAdmin(user.email);
   return (
     <main className="account-page" id="main-content">
       <header className="account-nav">
         <Link className="brand" href="/"><span className="brand-mark"><i /><i /><i /></span><span>SIGNAL<span className="brand-dot">°</span></span></Link>
-        <div><span>{user.displayName}</span><a href={chatGPTSignOutPath("/")}>Sign out ↗</a></div>
+        <div><span>{user.displayName}</span>{admin ? <Link href="/ops/inquiries">Ops queue ↗</Link> : null}<a href={chatGPTSignOutPath("/")}>Sign out ↗</a></div>
       </header>
       <section className="account-hero">
         <p className="lead-line light">PRIVATE OBSERVATORY / AUDIT HISTORY</p>

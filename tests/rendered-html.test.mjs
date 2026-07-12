@@ -155,6 +155,11 @@ class MockInquiryDb {
         return statement;
       },
       async all() {
+        if (sql.includes("FROM project_inquiries ORDER BY created_at DESC")) {
+          return {
+            results: [...db.inquiries].sort((left, right) => right.createdAt - left.createdAt),
+          };
+        }
         if (sql.includes("FROM project_inquiries WHERE owner_key = ?")) {
           const ownerKey = String(values[0]);
           return {
@@ -168,7 +173,19 @@ class MockInquiryDb {
       async run() {
         if (sql.includes("INSERT INTO project_inquiries")) {
           const [id, ownerKey, orderId, name, email, website, market, services, notes, createdAt, updatedAt] = values;
-          db.inquiries.push({ id, ownerKey, orderId, name, email, website, market, services, notes, createdAt, updatedAt, status: "new" });
+          db.inquiries.push({ id, ownerKey, orderId, name, email, website, market, services, notes, createdAt, updatedAt, reviewedAt: null, reviewerEmail: null, status: "new" });
+        }
+        if (sql.includes("UPDATE project_inquiries")) {
+          const [status, reviewerEmail, reviewedAt, updatedAt, id] = values;
+          const inquiry = db.inquiries.find((item) => item.id === id);
+          if (inquiry) {
+            inquiry.status = status;
+            inquiry.reviewerEmail = reviewerEmail;
+            inquiry.reviewedAt = reviewedAt;
+            inquiry.updatedAt = updatedAt;
+            return { success: true, meta: { changes: 1 } };
+          }
+          return { success: true, meta: { changes: 0 } };
         }
         return { success: true };
       },
@@ -396,6 +413,64 @@ test("accepts a same-origin done-for-you project intake", async () => {
     assert.equal(listed.status, 200);
     const listedPayload = await listed.json();
     assert.equal(listedPayload.inquiries.length, 1);
+  } finally {
+    delete globalThis.__TEST_ENV__;
+  }
+});
+
+test("protects the ops inquiry queue behind admin allowlist", async () => {
+  const worker = await loadWorker("ops-queue");
+  const inquiryEnv = { ...env, DB: new MockInquiryDb() };
+  globalThis.__TEST_ENV__ = { DB: inquiryEnv.DB, RATE_LIMIT_SALT: "test-salt", SIGNAL_ADMIN_EMAILS: "admin@example.com" };
+  try {
+    const denied = await worker.fetch(new Request("http://localhost/ops/inquiries", {
+      headers: { accept: "text/html", "oai-authenticated-user-email": "member@example.com" },
+    }), inquiryEnv, ctx);
+    assert.equal(denied.status, 200);
+    assert.match(await denied.text(), /SIGNAL_ADMIN_EMAILS/);
+
+    const allowed = await worker.fetch(new Request("http://localhost/api/inquiries", {
+      headers: { "oai-authenticated-user-email": "admin@example.com" },
+    }), inquiryEnv, ctx);
+    assert.equal(allowed.status, 200);
+    const payload = await allowed.json();
+    assert.equal(payload.admin, true);
+  } finally {
+    delete globalThis.__TEST_ENV__;
+  }
+});
+
+test("allows admins to update inquiry status", async () => {
+  const worker = await loadWorker("ops-update");
+  const inquiryEnv = { ...env, DB: new MockInquiryDb() };
+  globalThis.__TEST_ENV__ = { DB: inquiryEnv.DB, RATE_LIMIT_SALT: "test-salt", SIGNAL_ADMIN_EMAILS: "admin@example.com" };
+  try {
+    const created = await worker.fetch(new Request("http://localhost/api/inquiries", {
+      method: "POST",
+      headers: { "content-type": "application/json", "oai-authenticated-user-email": "owner@example.com" },
+      body: JSON.stringify({
+        name: "Owner",
+        email: "owner@example.com",
+        website: "https://example.com",
+        market: "Healthcare",
+        services: "Schema and content updates",
+        notes: "Need help with local entity visibility.",
+      }),
+    }), inquiryEnv, ctx);
+    const createdPayload = await created.json();
+
+    const updated = await worker.fetch(new Request(`http://localhost/api/inquiries/${createdPayload.inquiry.id}`, {
+      method: "PATCH",
+      headers: { "content-type": "application/json", "oai-authenticated-user-email": "admin@example.com" },
+      body: JSON.stringify({ status: "reviewing" }),
+    }), inquiryEnv, ctx);
+    assert.equal(updated.status, 200);
+
+    const listed = await worker.fetch(new Request("http://localhost/api/inquiries", {
+      headers: { "oai-authenticated-user-email": "admin@example.com" },
+    }), inquiryEnv, ctx);
+    const listedPayload = await listed.json();
+    assert.equal(listedPayload.inquiries[0].status, "reviewing");
   } finally {
     delete globalThis.__TEST_ENV__;
   }
