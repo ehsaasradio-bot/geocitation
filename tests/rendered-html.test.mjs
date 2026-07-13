@@ -165,7 +165,19 @@ class MockInquiryDb {
           return {
             results: db.inquiries
               .filter((inquiry) => inquiry.ownerKey === ownerKey)
-              .sort((left, right) => right.createdAt - left.createdAt),
+              .sort((left, right) => right.createdAt - left.createdAt)
+              .map(({ id, orderId, website, market, services, status, priority, reviewedAt, createdAt, updatedAt }) => ({
+                id,
+                orderId,
+                website,
+                market,
+                services,
+                status,
+                priority,
+                reviewedAt,
+                createdAt,
+                updatedAt,
+              })),
           };
         }
         return { results: [] };
@@ -432,6 +444,9 @@ test("accepts a same-origin done-for-you project intake", async () => {
     assert.equal(listed.status, 200);
     const listedPayload = await listed.json();
     assert.equal(listedPayload.inquiries.length, 1);
+    assert.equal(listedPayload.inquiries[0].priority, "standard");
+    assert.equal("adminNote" in listedPayload.inquiries[0], false);
+    assert.equal("reviewerEmail" in listedPayload.inquiries[0], false);
   } finally {
     delete globalThis.__TEST_ENV__;
   }

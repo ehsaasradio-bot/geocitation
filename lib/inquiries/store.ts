@@ -74,12 +74,25 @@ export type InquirySummary = {
   updatedAt: number;
 };
 
-export async function listProjectInquiries(email: string): Promise<InquirySummary[]> {
+export type AccountInquirySummary = {
+  id: string;
+  orderId: string | null;
+  website: string;
+  market: string;
+  services: string;
+  status: string;
+  priority: string;
+  createdAt: number;
+  updatedAt: number;
+  reviewedAt: number | null;
+};
+
+export async function listProjectInquiries(email: string): Promise<AccountInquirySummary[]> {
   const owner = await ownerKey(email);
   const rows = await (await database()).prepare(`
-    SELECT id, order_id AS orderId, name, email, website, market, services, notes, status, priority, admin_note AS adminNote, reviewer_email AS reviewerEmail, reviewed_at AS reviewedAt, created_at AS createdAt, updated_at AS updatedAt
+    SELECT id, order_id AS orderId, website, market, services, status, priority, reviewed_at AS reviewedAt, created_at AS createdAt, updated_at AS updatedAt
     FROM project_inquiries WHERE owner_key = ? ORDER BY created_at DESC LIMIT 20
-  `).bind(owner).all<InquirySummary>();
+  `).bind(owner).all<AccountInquirySummary>();
   return rows.results;
 }
 

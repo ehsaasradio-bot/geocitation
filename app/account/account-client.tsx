@@ -35,8 +35,15 @@ type InquirySummary = {
   market: string;
   services: string;
   status: string;
+  priority: string;
   createdAt: number;
+  updatedAt: number;
+  reviewedAt: number | null;
 };
+
+function labelize(value: string) {
+  return value.replaceAll("-", " ");
+}
 
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
@@ -96,13 +103,13 @@ export function AccountClient() {
         ))}
       </div> : null}
       {inquiries?.length ? <div className="account-order-list account-inquiry-list">
-        <div className="account-report-head"><span>Inquiry</span><span>Status</span><span>Market</span><span>Created</span><span>Actions</span></div>
+        <div className="account-report-head"><span>Inquiry</span><span>Status</span><span>Market</span><span>Updated</span><span>Actions</span></div>
         {inquiries.map((inquiry) => (
           <article key={inquiry.id}>
             <div><strong>{inquiry.website}</strong><p>{inquiry.services}</p></div>
-            <time dateTime={new Date(inquiry.createdAt).toISOString()}>{formatTimestamp(inquiry.createdAt)}</time>
+            <time dateTime={new Date(inquiry.updatedAt).toISOString()}>{formatTimestamp(inquiry.updatedAt)}</time>
             <b>{inquiry.market}</b>
-            <em>{inquiry.status}</em>
+            <em>{labelize(inquiry.status)} · {labelize(inquiry.priority)}</em>
             <div className="account-row-actions">
               <Link href={`/contact?website=${encodeURIComponent(inquiry.website)}${inquiry.orderId ? `&order=${encodeURIComponent(inquiry.orderId)}` : ""}#intake`}>Update intake ↗</Link>
               {inquiry.orderId ? <Link href={`/account/orders/${inquiry.orderId}`}>Linked receipt ↗</Link> : <Link href="/contact#intake">Open intake ↗</Link>}

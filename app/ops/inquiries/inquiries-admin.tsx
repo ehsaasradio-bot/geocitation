@@ -44,11 +44,24 @@ function formatDate(value: number | null) {
   return new Intl.DateTimeFormat("en", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
 }
 
+function labelize(value: string) {
+  return value.replaceAll("-", " ");
+}
+
+function priorityWeight(priority: string) {
+  if (priority === "urgent") return 3;
+  if (priority === "high") return 2;
+  return 1;
+}
+
 export function InquiriesAdmin() {
   const [inquiries, setInquiries] = useState<InquirySummary[] | null>(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState<string>("");
   const [filter, setFilter] = useState<(typeof statusOptions)[number] | "all">("all");
+  const [priorityFilter, setPriorityFilter] = useState<(typeof priorityOptions)[number] | "all">("all");
+  const [sort, setSort] = useState<"newest" | "oldest" | "priority" | "recent-review">("newest");
+  const [search, setSearch] = useState("");
   const [drafts, setDrafts] = useState<Record<string, { status: string; priority: string; adminNote: string }>>({});
 
   useEffect(() => {
@@ -93,9 +106,34 @@ export function InquiriesAdmin() {
     status,
     count: inquiries?.filter((inquiry) => inquiry.status === status).length ?? 0,
   }));
+  const priorityCounts = priorityOptions.map((priority) => ({
+    priority,
+    count: inquiries?.filter((inquiry) => inquiry.priority === priority).length ?? 0,
+  }));
   const visibleInquiries = useMemo(
-    () => inquiries?.filter((inquiry) => filter === "all" || inquiry.status === filter) ?? [],
-    [filter, inquiries],
+    () => {
+      const query = search.trim().toLowerCase();
+      const filtered = inquiries?.filter((inquiry) => {
+        if (filter !== "all" && inquiry.status !== filter) return false;
+        if (priorityFilter !== "all" && inquiry.priority !== priorityFilter) return false;
+        if (!query) return true;
+        return [
+          inquiry.website,
+          inquiry.market,
+          inquiry.name,
+          inquiry.email,
+          inquiry.services,
+          inquiry.notes,
+        ].some((value) => value.toLowerCase().includes(query));
+      }) ?? [];
+      return [...filtered].sort((left, right) => {
+        if (sort === "oldest") return left.createdAt - right.createdAt;
+        if (sort === "recent-review") return (right.reviewedAt ?? 0) - (left.reviewedAt ?? 0) || right.createdAt - left.createdAt;
+        if (sort === "priority") return priorityWeight(right.priority) - priorityWeight(left.priority) || right.createdAt - left.createdAt;
+        return right.createdAt - left.createdAt;
+      });
+    },
+    [filter, inquiries, priorityFilter, search, sort],
   );
 
   const exportQueue = () => {
@@ -130,6 +168,9 @@ export function InquiriesAdmin() {
       <div className="ops-metrics">
         {counts.map((item) => <article key={item.status}><span>{item.status}</span><strong>{item.count}</strong></article>)}
       </div>
+      <div className="ops-priority-strip">
+        {priorityCounts.map((item) => <article key={item.priority}><span>{item.priority}</span><strong>{item.count}</strong></article>)}
+      </div>
 
       <div className="ops-toolbar">
         <label>
@@ -139,8 +180,30 @@ export function InquiriesAdmin() {
             {statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}
           </select>
         </label>
+        <label>
+          <span>Priority</span>
+          <select value={priorityFilter} onChange={(event) => setPriorityFilter(event.target.value as (typeof priorityOptions)[number] | "all")}>
+            <option value="all">all</option>
+            {priorityOptions.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
+          </select>
+        </label>
+        <label className="ops-search">
+          <span>Search</span>
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="website, market, contact, notes…" />
+        </label>
+        <label>
+          <span>Sort</span>
+          <select value={sort} onChange={(event) => setSort(event.target.value as "newest" | "oldest" | "priority" | "recent-review")}>
+            <option value="newest">newest first</option>
+            <option value="oldest">oldest first</option>
+            <option value="priority">highest priority</option>
+            <option value="recent-review">recently reviewed</option>
+          </select>
+        </label>
         <button type="button" onClick={exportQueue} disabled={!visibleInquiries.length}>Export CSV <span>↓</span></button>
       </div>
+
+      <p className="ops-result-count">{visibleInquiries.length} visible {visibleInquiries.length === 1 ? "inquiry" : "inquiries"}.</p>
 
       {error ? <p className="account-error" role="alert">{error}</p> : null}
       {inquiries === null && !error ? <p className="account-loading"><i className="live-dot" />LOADING INQUIRY QUEUE</p> : null}
@@ -153,6 +216,11 @@ export function InquiriesAdmin() {
                 <span>{inquiry.market}</span>
                 <h3>{inquiry.website}</h3>
                 <p>{inquiry.name} · {inquiry.email}</p>
+                <div className="ops-chip-row">
+                  <i className={`ops-chip status-${inquiry.status}`}>{labelize(inquiry.status)}</i>
+                  <i className={`ops-chip priority-${inquiry.priority}`}>{labelize(inquiry.priority)}</i>
+                  {inquiry.orderId ? <a className="ops-chip ops-chip-link" href={`/account/orders/${inquiry.orderId}`}>linked receipt ↗</a> : null}
+                </div>
               </div>
               <label>
                 <small>Status</small>
@@ -179,7 +247,20 @@ export function InquiriesAdmin() {
                 <small>Internal note</small>
                 <textarea value={drafts[inquiry.id]?.adminNote ?? inquiry.adminNote} disabled={saving === inquiry.id} onChange={(event) => setDrafts((current) => ({ ...current, [inquiry.id]: { ...current[inquiry.id], adminNote: event.target.value } }))} rows={4} />
               </label>
-              <button type="button" disabled={saving === inquiry.id} onClick={() => void updateReview(inquiry.id)}>{saving === inquiry.id ? "Saving…" : "Save review"} <span>↗</span></button>
+              <button
+                type="button"
+                disabled={
+                  saving === inquiry.id
+                  || (
+                    (drafts[inquiry.id]?.status ?? inquiry.status) === inquiry.status
+                    && (drafts[inquiry.id]?.priority ?? inquiry.priority) === inquiry.priority
+                    && (drafts[inquiry.id]?.adminNote ?? inquiry.adminNote) === inquiry.adminNote
+                  )
+                }
+                onClick={() => void updateReview(inquiry.id)}
+              >
+                {saving === inquiry.id ? "Saving…" : "Save review"} <span>↗</span>
+              </button>
             </div>
           </article>
         ))}
