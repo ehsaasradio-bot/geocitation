@@ -24,6 +24,8 @@ Phase 6 completes the sandbox-era premium funnel: receipt tracking, context-pres
 
 Phase 7 begins the production operations layer: an admin-only inquiry queue, protected review access via `SIGNAL_ADMIN_EMAILS`, and tracked status changes for done-for-you project requests.
 
+Phase 8 upgrades report delivery with an executive brief, client-ready Markdown export, and print/PDF styling so paid audit output can leave the app as a usable deliverable while real payments remain sandboxed.
+
 Phase 1 production protection uses D1-backed salted rate-limit identifiers, bounded crawl budgets, same-origin request enforcement and centralized security headers.
 
 ## Local development
