@@ -12,6 +12,8 @@ type InquirySummary = {
   services: string;
   notes: string;
   status: string;
+  priority: string;
+  adminNote: string;
   reviewerEmail: string | null;
   reviewedAt: number | null;
   createdAt: number;
@@ -19,6 +21,7 @@ type InquirySummary = {
 };
 
 const statusOptions = ["new", "reviewing", "scoped", "closed"] as const;
+const priorityOptions = ["standard", "high", "urgent"] as const;
 
 function csvCell(value: unknown) {
   let text = String(value ?? "");
@@ -46,24 +49,39 @@ export function InquiriesAdmin() {
   const [error, setError] = useState("");
   const [saving, setSaving] = useState<string>("");
   const [filter, setFilter] = useState<(typeof statusOptions)[number] | "all">("all");
+  const [drafts, setDrafts] = useState<Record<string, { status: string; priority: string; adminNote: string }>>({});
 
   useEffect(() => {
     void fetch("/api/inquiries", { cache: "no-store" })
       .then(async (response) => response.ok ? response.json() as Promise<{ inquiries: InquirySummary[]; admin: boolean }> : Promise.reject(new Error("Admin inquiry queue could not be loaded.")))
-      .then((payload) => setInquiries(payload.inquiries))
+      .then((payload) => {
+        setInquiries(payload.inquiries);
+        setDrafts(Object.fromEntries(payload.inquiries.map((inquiry) => [inquiry.id, { status: inquiry.status, priority: inquiry.priority, adminNote: inquiry.adminNote }])));
+      })
       .catch((loadError: unknown) => setError(loadError instanceof Error ? loadError.message : "Admin inquiry queue could not be loaded."));
   }, []);
 
-  const updateStatus = async (id: string, status: string) => {
+  const updateReview = async (id: string) => {
+    const draft = drafts[id];
+    if (!draft) return;
     setSaving(id);
     try {
       const response = await fetch(`/api/inquiries/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(draft),
       });
       if (!response.ok) throw new Error("Status update failed.");
-      setInquiries((current) => current?.map((inquiry) => inquiry.id === id ? { ...inquiry, status } : inquiry) ?? current);
+      const payload = await response.json() as { inquiry: Pick<InquirySummary, "id" | "status" | "priority" | "adminNote" | "reviewerEmail" | "reviewedAt" | "updatedAt"> };
+      setInquiries((current) => current?.map((inquiry) => inquiry.id === id ? { ...inquiry, ...payload.inquiry } : inquiry) ?? current);
+      setDrafts((current) => ({
+        ...current,
+        [id]: {
+          status: payload.inquiry.status,
+          priority: payload.inquiry.priority,
+          adminNote: payload.inquiry.adminNote,
+        },
+      }));
     } catch (updateError) {
       setError(updateError instanceof Error ? updateError.message : "Status update failed.");
     } finally {
@@ -83,15 +101,17 @@ export function InquiriesAdmin() {
   const exportQueue = () => {
     if (!visibleInquiries.length) return;
     downloadCsv("signal-inquiries.csv", [
-      ["website", "market", "name", "email", "status", "services", "notes", "created_at", "reviewed_at", "reviewer"],
+      ["website", "market", "name", "email", "status", "priority", "services", "notes", "admin_note", "created_at", "reviewed_at", "reviewer"],
       ...visibleInquiries.map((inquiry) => [
         inquiry.website,
         inquiry.market,
         inquiry.name,
         inquiry.email,
         inquiry.status,
+        inquiry.priority,
         inquiry.services,
         inquiry.notes,
+        inquiry.adminNote,
         formatDate(inquiry.createdAt),
         formatDate(inquiry.reviewedAt),
         inquiry.reviewerEmail ?? "",
@@ -136,7 +156,7 @@ export function InquiriesAdmin() {
               </div>
               <label>
                 <small>Status</small>
-                <select value={inquiry.status} disabled={saving === inquiry.id} onChange={(event) => void updateStatus(inquiry.id, event.target.value)}>
+                <select value={drafts[inquiry.id]?.status ?? inquiry.status} disabled={saving === inquiry.id} onChange={(event) => setDrafts((current) => ({ ...current, [inquiry.id]: { ...current[inquiry.id], status: event.target.value } }))}>
                   {statusOptions.map((status) => <option key={status} value={status}>{status}</option>)}
                 </select>
               </label>
@@ -147,6 +167,19 @@ export function InquiriesAdmin() {
               <div><b>Notes</b><p>{inquiry.notes}</p></div>
               <div><b>Created</b><p>{formatDate(inquiry.createdAt)}</p></div>
               <div><b>Last review</b><p>{formatDate(inquiry.reviewedAt)}{inquiry.reviewerEmail ? ` · ${inquiry.reviewerEmail}` : ""}</p></div>
+            </div>
+            <div className="ops-review-row">
+              <label>
+                <small>Priority</small>
+                <select value={drafts[inquiry.id]?.priority ?? inquiry.priority} disabled={saving === inquiry.id} onChange={(event) => setDrafts((current) => ({ ...current, [inquiry.id]: { ...current[inquiry.id], priority: event.target.value } }))}>
+                  {priorityOptions.map((priority) => <option key={priority} value={priority}>{priority}</option>)}
+                </select>
+              </label>
+              <label className="ops-note-field">
+                <small>Internal note</small>
+                <textarea value={drafts[inquiry.id]?.adminNote ?? inquiry.adminNote} disabled={saving === inquiry.id} onChange={(event) => setDrafts((current) => ({ ...current, [inquiry.id]: { ...current[inquiry.id], adminNote: event.target.value } }))} rows={4} />
+              </label>
+              <button type="button" disabled={saving === inquiry.id} onClick={() => void updateReview(inquiry.id)}>{saving === inquiry.id ? "Saving…" : "Save review"} <span>↗</span></button>
             </div>
           </article>
         ))}

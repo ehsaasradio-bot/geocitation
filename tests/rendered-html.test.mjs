@@ -173,13 +173,32 @@ class MockInquiryDb {
       async run() {
         if (sql.includes("INSERT INTO project_inquiries")) {
           const [id, ownerKey, orderId, name, email, website, market, services, notes, createdAt, updatedAt] = values;
-          db.inquiries.push({ id, ownerKey, orderId, name, email, website, market, services, notes, createdAt, updatedAt, reviewedAt: null, reviewerEmail: null, status: "new" });
+          db.inquiries.push({
+            id,
+            ownerKey,
+            orderId,
+            name,
+            email,
+            website,
+            market,
+            services,
+            notes,
+            createdAt,
+            updatedAt,
+            reviewedAt: null,
+            reviewerEmail: null,
+            status: "new",
+            priority: "standard",
+            adminNote: "",
+          });
         }
         if (sql.includes("UPDATE project_inquiries")) {
-          const [status, reviewerEmail, reviewedAt, updatedAt, id] = values;
+          const [status, priority, adminNote, reviewerEmail, reviewedAt, updatedAt, id] = values;
           const inquiry = db.inquiries.find((item) => item.id === id);
           if (inquiry) {
             inquiry.status = status;
+            inquiry.priority = priority;
+            inquiry.adminNote = adminNote;
             inquiry.reviewerEmail = reviewerEmail;
             inquiry.reviewedAt = reviewedAt;
             inquiry.updatedAt = updatedAt;
@@ -440,7 +459,7 @@ test("protects the ops inquiry queue behind admin allowlist", async () => {
   }
 });
 
-test("allows admins to update inquiry status", async () => {
+test("allows admins to update inquiry review state", async () => {
   const worker = await loadWorker("ops-update");
   const inquiryEnv = { ...env, DB: new MockInquiryDb() };
   globalThis.__TEST_ENV__ = { DB: inquiryEnv.DB, RATE_LIMIT_SALT: "test-salt", SIGNAL_ADMIN_EMAILS: "admin@example.com" };
@@ -462,15 +481,20 @@ test("allows admins to update inquiry status", async () => {
     const updated = await worker.fetch(new Request(`http://localhost/api/inquiries/${createdPayload.inquiry.id}`, {
       method: "PATCH",
       headers: { "content-type": "application/json", "oai-authenticated-user-email": "admin@example.com" },
-      body: JSON.stringify({ status: "reviewing" }),
+      body: JSON.stringify({ status: "reviewing", priority: "urgent", adminNote: "Ready for scoped outreach." }),
     }), inquiryEnv, ctx);
     assert.equal(updated.status, 200);
+    const updatedPayload = await updated.json();
+    assert.equal(updatedPayload.inquiry.priority, "urgent");
+    assert.equal(updatedPayload.inquiry.adminNote, "Ready for scoped outreach.");
 
     const listed = await worker.fetch(new Request("http://localhost/api/inquiries", {
       headers: { "oai-authenticated-user-email": "admin@example.com" },
     }), inquiryEnv, ctx);
     const listedPayload = await listed.json();
     assert.equal(listedPayload.inquiries[0].status, "reviewing");
+    assert.equal(listedPayload.inquiries[0].priority, "urgent");
+    assert.equal(listedPayload.inquiries[0].adminNote, "Ready for scoped outreach.");
   } finally {
     delete globalThis.__TEST_ENV__;
   }
