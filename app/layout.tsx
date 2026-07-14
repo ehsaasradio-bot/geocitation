@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "AI SIGNAL° — Citation readiness, made observable",
-    template: "%s | AI SIGNAL°",
+    default: "GEOCITATION — Citation readiness, made observable",
+    template: "%s | GEOCITATION",
   },
   description: "Audit how public AI crawlers can discover, understand and evaluate your website. See evidence behind every citation-readiness signal.",
   alternates: { canonical: "/" },
@@ -25,13 +25,13 @@ export const metadata: Metadata = {
     type: "website",
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: "AI SIGNAL° — Citation readiness, made observable",
+    title: "GEOCITATION — Citation readiness, made observable",
     description: "Run a live, evidence-backed audit of AI crawler access, content citability, structured data and trust signals.",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "AI SIGNAL° citation-readiness observatory" }],
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "GEOCITATION citation-readiness observatory" }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "AI SIGNAL° — Citation readiness, made observable",
+    title: "GEOCITATION — Citation readiness, made observable",
     description: "See what AI can find. Fix what it cannot.",
     images: ["/og.png"],
   },

@@ -29,7 +29,7 @@ export default async function SandboxOrderPage({ params }: { params: Promise<{ i
   return (
     <main className="account-page" id="main-content">
       <header className="account-nav">
-        <Link className="brand" href="/"><span className="brand-mark"><i /><i /><i /></span><span>SIGNAL<span className="brand-dot">°</span></span></Link>
+        <Link className="brand" href="/"><img className="brand-logo" src="/geocitation-logo.png" alt="GEOCITATION" /></Link>
         <div><span>{user.displayName}</span><a href={chatGPTSignOutPath("/")}>Sign out ↗</a></div>
       </header>
 

@@ -37,15 +37,8 @@ em { font-style: normal; }
   mix-blend-mode: normal;
 }
 
-.brand { display: inline-flex; align-items: center; gap: 12px; width: max-content; font-weight: 640; letter-spacing: -.04em; font-size: 20px; }
-.brand-dot { color: var(--signal); }
-.brand-mark { position: relative; width: 27px; height: 27px; display: inline-block; border: 1px solid rgba(241,238,229,.44); border-radius: 50%; }
-.brand-mark i { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: var(--signal); }
-.brand-mark i:nth-child(1) { top: 5px; left: 11px; }
-.brand-mark i:nth-child(2) { bottom: 5px; left: 6px; }
-.brand-mark i:nth-child(3) { bottom: 7px; right: 5px; }
-.brand-mark::after { content: ""; position: absolute; inset: 7px; border: 1px solid rgba(201,255,71,.45); border-radius: 50%; }
-
+.brand { display: inline-flex; align-items: center; width: max-content; max-width: min(230px, 42vw); line-height: 1; white-space: nowrap; }
+.brand-logo { display: block; width: clamp(118px, 9.5vw, 172px); height: auto; aspect-ratio: 1683 / 853; object-fit: contain; filter: drop-shadow(0 0 16px rgba(201,255,71,.1)); }
 nav { display: flex; align-items: center; gap: 30px; padding: 12px 20px; border: 1px solid rgba(241,238,229,.08); border-radius: 999px; background: rgba(7,9,8,.52); backdrop-filter: blur(14px); }
 nav a { font-size: 12px; text-transform: uppercase; letter-spacing: .13em; color: rgba(241,238,229,.7); transition: color .25s ease; }
 nav a:hover { color: var(--signal); }
@@ -80,7 +73,7 @@ nav a:hover { color: var(--signal); }
 .node-b { right: 22%; top: 26%; animation-delay: -.7s; }
 .node-c { right: 30%; bottom: 19%; animation-delay: -1.25s; }
 .banner-title { position: absolute; z-index: 4; left: 1.05vw; right: 1.05vw; top: 48%; transform: translateY(-50%); text-align: center; pointer-events: none; }
-.banner-title h1 { max-width: none; white-space: nowrap; margin: 0; color: #f2f1ed; font-size: clamp(76px,16.3vw,282px); font-weight: 560; letter-spacing: -.085em; line-height: .78; text-shadow: 0 9px 60px rgba(0,0,0,.35); display: flex; justify-content: center; align-items: flex-start; }
+.banner-title h1 { max-width: none; white-space: nowrap; margin: 0; color: #f2f1ed; font-size: clamp(54px,10.6vw,184px); font-weight: 620; letter-spacing: 0; line-height: .86; text-shadow: 0 9px 60px rgba(0,0,0,.35); display: flex; justify-content: center; align-items: flex-start; }
 .banner-title h1 > span + span { margin-left: .09em; }
 .banner-title sup { display: inline-block; color: var(--signal); font-size: .22em; line-height: 1; letter-spacing: 0; margin: -.05em 0 0 .08em; }
 .banner-copy { position: absolute; z-index: 6; left: 50%; bottom: 18vh; transform: translateX(-50%); width: min(1720px,calc(100% - 80px)); margin: 0; color: rgba(241,238,229,.68); text-align: center; font: 570 94px/.88 var(--font-geist-sans), Arial, sans-serif; letter-spacing: 0; text-transform: uppercase; text-wrap: balance; }
@@ -346,7 +339,7 @@ h2 span { color: var(--signal); font: inherit; letter-spacing: inherit; }
 .closing-section > a:hover { transform: translateY(-4px); box-shadow: 0 15px 45px rgba(201,255,71,.2); }
 
 footer { min-height: 110px; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr 1fr auto; align-items: center; gap: 30px; padding: 25px 3.25vw; }
-.footer-brand { font-size: 17px; }
+.footer-brand .brand-logo { width: clamp(132px, 12vw, 190px); }
 footer > p,footer > span { color: rgba(241,238,229,.36); font: 8px var(--font-geist-mono), monospace; letter-spacing: .09em; text-transform: uppercase; }
 footer > div { display: flex; gap: 20px; font-size: 9px; text-transform: uppercase; letter-spacing: .08em; }
 footer > div a:hover { color: var(--signal); }
@@ -757,7 +750,7 @@ footer > div a:hover { color: var(--signal); }
 
 @media (max-width: 1040px) {
   .signal-planet { width: min(76vw,820px); top: 13%; }
-  .banner-title h1 { font-size: 15.7vw; }
+  .banner-title h1 { font-size: 10.8vw; }
   .banner-copy { bottom: 17vh; width: min(880px,calc(100% - 56px)); font-size: 46px; line-height: .94; }
   .banner-question { top: 38vh; width: min(760px,calc(100% - 48px)); font-size: 20px; line-height: 1.08; }
   .banner-specs { top: 112px; }
@@ -827,7 +820,7 @@ footer > div a:hover { color: var(--signal); }
   .banner-specs,.banner-coordinate { display: none; }
   .signal-planet { width: 116vw; top: 15%; }
   .banner-title { top: 42%; left: 10px; right: 10px; }
-  .banner-title h1 { font-size: 17.8vw; letter-spacing: -.075em; }
+  .banner-title h1 { font-size: 11.6vw; letter-spacing: 0; }
   .banner-copy { bottom: 132px; width: min(430px,calc(100% - 36px)); font-size: 24px; line-height: 1.05; }
   .banner-question { top: 245px; width: calc(100% - 28px); font-size: 12px; line-height: 1.12; }
   .banner-actions { bottom: 56px; width: calc(100% - 36px); display: grid; grid-template-columns: 1fr 1fr; }

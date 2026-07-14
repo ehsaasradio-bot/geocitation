@@ -1,15 +1,15 @@
-# AI SIGNAL°
+# GEOCITATION
 
-AI SIGNAL° is an evidence-backed website audit for public AI discoverability and citation readiness.
+GEOCITATION is an evidence-backed website audit for public AI discoverability and citation readiness.
 
 ## Canonical pages
 
-- [Home and live audit](https://signal-observatory.syedmubashirhaq.chatgpt.site/)
-- [Methodology](https://signal-observatory.syedmubashirhaq.chatgpt.site/methodology)
-- [Frequently asked questions](https://signal-observatory.syedmubashirhaq.chatgpt.site/faq)
-- [About AI SIGNAL°](https://signal-observatory.syedmubashirhaq.chatgpt.site/about)
-- [Privacy policy](https://signal-observatory.syedmubashirhaq.chatgpt.site/privacy)
-- [Terms of service](https://signal-observatory.syedmubashirhaq.chatgpt.site/terms)
+- [Home and live audit](https://geocitation.org/)
+- [Methodology](https://geocitation.org/methodology)
+- [Frequently asked questions](https://geocitation.org/faq)
+- [About GEOCITATION](https://geocitation.org/about)
+- [Privacy policy](https://geocitation.org/privacy)
+- [Terms of service](https://geocitation.org/terms)
 
 ## Product boundaries
 

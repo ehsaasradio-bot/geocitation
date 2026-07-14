@@ -6,8 +6,8 @@ import { ContactIntakeForm } from "./contact-intake-form";
 import { getSandboxOrder } from "../../lib/billing/sandbox";
 
 export const metadata: Metadata = {
-  title: "Contact Us — SIGNAL°",
-  description: "Contact SIGNAL° for AI visibility audits, GEO implementation and website citation readiness.",
+  title: "Contact Us — GEOCITATION",
+  description: "Contact GEOCITATION for AI visibility audits, GEO implementation and website citation readiness.",
 };
 
 export default async function ContactPage({ searchParams }: { searchParams: Promise<{ order?: string; website?: string }> }) {

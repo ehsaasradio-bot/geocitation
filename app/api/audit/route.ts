@@ -385,7 +385,7 @@ async function fetchPublic(url: URL, byteLimit = MAX_PAGE_BYTES, auditSignal?: A
         signal: controller.signal,
         headers: {
           Accept: "text/html,application/xhtml+xml,application/xml,text/plain;q=0.9,*/*;q=0.2",
-          "User-Agent": "SignalObservatory/1.0 (+https://signal-observatory.syedmubashirhaq.chatgpt.site)",
+          "User-Agent": "SignalObservatory/1.0 (+https://geocitation.org)",
         },
       });
 

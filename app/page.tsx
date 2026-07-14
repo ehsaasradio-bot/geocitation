@@ -486,9 +486,8 @@ export default function Home() {
   return (
     <main id="main-content">
       <header className="site-header">
-        <a className="brand" href="#top" aria-label="Signal home">
-          <span className="brand-mark"><i /><i /><i /></span>
-          <span>SIGNAL<span className="brand-dot">°</span></span>
+        <a className="brand" href="#top" aria-label="Geocitation home">
+          <img className="brand-logo" src="/geocitation-logo.png" alt="GEOCITATION" />
         </a>
         <nav aria-label="Main navigation">
           <a href="#method">Method</a>
@@ -518,7 +517,7 @@ export default function Home() {
           <span>SIGNAL ACQUISITION</span>
         </div>
         <div className="banner-title">
-          <h1 id="launch-title"><span>AI</span><span>SIGNAL</span><sup>°</sup></h1>
+          <h1 id="launch-title"><span>GEOCITATION</span></h1>
         </div>
         <p className="banner-copy">SEE WHAT AI CAN FIND. FIX WHAT IT CAN’T.</p>
         <h3 className="banner-question">YOUR WEBSITE EXISTS. DOES AI KNOW IT?</h3>
@@ -810,10 +809,10 @@ export default function Home() {
       </section>
 
       <footer>
-        <a className="brand footer-brand" href="#top"><span className="brand-mark"><i /><i /><i /></span><span>SIGNAL<span className="brand-dot">°</span></span></a>
+        <a className="brand footer-brand" href="#top"><img className="brand-logo" src="/geocitation-logo.png" alt="GEOCITATION" /></a>
         <p>AI visibility, made observable.</p>
         <div><a href="#method">Method</a><a href="#pricing">Pricing</a><a href="/faq">FAQ</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div>
-        <span>© 2026 SIGNAL OBSERVATORY</span>
+        <span>© 2026 GEOCITATION</span>
       </footer>
     </main>
   );

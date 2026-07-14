@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { InfoPage } from "../info-pages";
 
 export const metadata: Metadata = {
-  title: "Accessibility — SIGNAL°",
-  description: "Accessibility statement for SIGNAL°.",
+  title: "Accessibility — GEOCITATION",
+  description: "Accessibility statement for GEOCITATION.",
 };
 
 export default function AccessibilityPage() {
@@ -11,7 +11,7 @@ export default function AccessibilityPage() {
     <InfoPage
       eyebrow="ACCESSIBILITY / STATEMENT"
       title="Readable signals for everyone."
-      intro="SIGNAL° is designed for people navigating with keyboards, screen readers, zoom, reduced motion and assistive technologies."
+      intro="GEOCITATION is designed for people navigating with keyboards, screen readers, zoom, reduced motion and assistive technologies."
     >
       <div className="policy-stack">
         <article><span>01</span><h2>Our intent</h2><p>We aim for clear structure, readable contrast, keyboard-accessible controls and semantic content across the website.</p></article>

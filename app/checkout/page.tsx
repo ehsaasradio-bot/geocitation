@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Sandbox Checkout",
-  description: "Test the AI SIGNAL° purchase flow without a real payment.",
+  description: "Test the GEOCITATION purchase flow without a real payment.",
 };
 
 type CheckoutPageProps = { searchParams: Promise<{ plan?: string; report?: string; next?: string }> };
@@ -25,7 +25,7 @@ export default async function CheckoutPage({ searchParams }: CheckoutPageProps) 
   const user = await getChatGPTUser();
   return (
     <main className="checkout-page" id="main-content">
-      <header className="account-nav"><Link className="brand" href="/"><span className="brand-mark"><i /><i /><i /></span><span>SIGNAL<span className="brand-dot">°</span></span></Link><Link href={user ? "/account" : chatGPTSignInPath(returnTo)}>{user ? "My reports ↗" : "Sign in ↗"}</Link></header>
+      <header className="account-nav"><Link className="brand" href="/"><img className="brand-logo" src="/geocitation-logo.png" alt="GEOCITATION" /></Link><Link href={user ? "/account" : chatGPTSignInPath(returnTo)}>{user ? "My reports ↗" : "Sign in ↗"}</Link></header>
       {user ? (
         <CheckoutClient plan={plan} email={user.email} reportId={reportId} next={next} />
       ) : (

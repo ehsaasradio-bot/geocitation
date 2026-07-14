@@ -225,7 +225,7 @@ class MockInquiryDb {
   }
 }
 
-test("server-renders the Signal observatory", async () => {
+test("server-renders the Geocitation observatory", async () => {
   const worker = await loadWorker("page");
   const response = await worker.fetch(new Request("http://localhost/", {
     headers: { accept: "text/html" },
@@ -238,8 +238,8 @@ test("server-renders the Signal observatory", async () => {
   assert.match(response.headers.get("content-security-policy") ?? "", /frame-ancestors 'none'/);
 
   const html = await response.text();
-  assert.match(html, /SIGNAL°/);
-  assert.match(html, /AI<\/span><span>SIGNAL/);
+  assert.match(html, /GEOCITATION/);
+  assert.match(html, /geocitation-logo\.png/);
   assert.match(html, /SEE WHAT AI CAN FIND\. FIX WHAT IT CAN’T\./);
   assert.match(html, />Test Now</);
   assert.match(html, />How It Works</);
@@ -619,12 +619,12 @@ test("durably limits repeated production audits without storing raw addresses", 
     const worker = await loadWorker("rate-limit");
     const rateDb = new MockRateLimitDb();
     const protectedEnv = { ...env, DB: rateDb, RATE_LIMIT_SALT: "test-only-salt" };
-    const request = () => new Request("https://signal-observatory.syedmubashirhaq.chatgpt.site/api/audit", {
+    const request = () => new Request("https://geocitation.org/api/audit", {
       method: "POST",
       headers: {
         "content-type": "application/json",
         accept: "text/event-stream",
-        origin: "https://signal-observatory.syedmubashirhaq.chatgpt.site",
+        origin: "https://geocitation.org",
         "cf-connecting-ip": "203.0.113.25",
       },
       body: JSON.stringify({ url: "https://example.com" }),

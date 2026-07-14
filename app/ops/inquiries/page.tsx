@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Ops Inquiry Queue",
-  description: "Review and manage done-for-you project intake for AI SIGNAL°.",
+  description: "Review and manage done-for-you project intake for GEOCITATION.",
 };
 
 export default async function OpsInquiriesPage() {
@@ -18,7 +18,7 @@ export default async function OpsInquiriesPage() {
     return (
       <main className="account-page" id="main-content">
         <header className="account-nav">
-          <Link className="brand" href="/"><span className="brand-mark"><i /><i /><i /></span><span>SIGNAL<span className="brand-dot">°</span></span></Link>
+          <Link className="brand" href="/"><img className="brand-logo" src="/geocitation-logo.png" alt="GEOCITATION" /></Link>
           <Link href="/account">My reports ↗</Link>
         </header>
         <section className="account-hero">
@@ -34,7 +34,7 @@ export default async function OpsInquiriesPage() {
   return (
     <main className="account-page" id="main-content">
       <header className="account-nav">
-        <Link className="brand" href="/"><span className="brand-mark"><i /><i /><i /></span><span>SIGNAL<span className="brand-dot">°</span></span></Link>
+        <Link className="brand" href="/"><img className="brand-logo" src="/geocitation-logo.png" alt="GEOCITATION" /></Link>
         <div><span>{user.displayName}</span><a href={chatGPTSignOutPath("/")}>Sign out ↗</a></div>
       </header>
       <section className="account-hero">

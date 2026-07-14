@@ -1,6 +1,6 @@
-# AI SIGNAL°
+# GEOCITATION
 
-AI SIGNAL° is a live website observatory for public AI discoverability and citation readiness. It audits crawler access, source-HTML structure, content extractability, entity and trust signals, structured data, and machine-readable resources.
+GEOCITATION is a live website observatory for public AI discoverability and citation readiness. It audits crawler access, source-HTML structure, content extractability, entity and trust signals, structured data, and machine-readable resources.
 
 ## Product surface
 

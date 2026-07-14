@@ -13,8 +13,7 @@ export function InfoPage({ eyebrow, title, intro, children }: InfoPageProps) {
     <main className="info-page" id="main-content">
       <header className="site-header info-header">
         <Link className="brand" href="/">
-          <span className="brand-mark"><i /><i /><i /></span>
-          <span>SIGNAL<span className="brand-dot">°</span></span>
+          <img className="brand-logo" src="/geocitation-logo.png" alt="GEOCITATION" />
         </Link>
         <nav aria-label="Page navigation">
           <Link href="/methodology">Method</Link>
@@ -50,8 +49,7 @@ export function InfoPage({ eyebrow, title, intro, children }: InfoPageProps) {
 
       <footer>
         <Link className="brand footer-brand" href="/">
-          <span className="brand-mark"><i /><i /><i /></span>
-          <span>SIGNAL<span className="brand-dot">°</span></span>
+          <img className="brand-logo" src="/geocitation-logo.png" alt="GEOCITATION" />
         </Link>
         <p>AI visibility, made observable.</p>
         <div>
@@ -63,7 +61,7 @@ export function InfoPage({ eyebrow, title, intro, children }: InfoPageProps) {
           <Link href="/terms">Terms</Link>
           <Link href="/accessibility">Accessibility</Link>
         </div>
-        <span>© 2026 SIGNAL OBSERVATORY</span>
+        <span>© 2026 GEOCITATION</span>
       </footer>
     </main>
   );

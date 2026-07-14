@@ -3,7 +3,7 @@ import { InfoPage } from "../info-pages";
 
 export const metadata: Metadata = {
   title: "Audit Methodology",
-  description: "How AI SIGNAL° measures public crawler access, technical indexability, content citability, entity trust, structured data and answer readiness.",
+  description: "How GEOCITATION measures public crawler access, technical indexability, content citability, entity trust, structured data and answer readiness.",
 };
 
 const categories = [
@@ -20,7 +20,7 @@ export default function MethodologyPage() {
     <InfoPage
       eyebrow="METHODOLOGY / SIGNAL 2026.1"
       title="A score you can inspect, not just accept."
-      intro="AI SIGNAL° uses deterministic checks against public source HTML and machine-readable resources. Every recommendation is tied to an observed signal."
+      intro="GEOCITATION uses deterministic checks against public source HTML and machine-readable resources. Every recommendation is tied to an observed signal."
     >
       <div className="methodology-intro">
         <article><span>SCOPE</span><h2>Discover. Understand. Trust. Cite.</h2><p>The audit follows the sequence a public retrieval system needs before it can use a website as evidence: reach the page, understand the entity, evaluate trust and extract a useful answer.</p></article>

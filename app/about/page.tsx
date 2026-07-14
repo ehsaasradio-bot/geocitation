@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import { InfoPage } from "../info-pages";
 
 export const metadata: Metadata = {
-  title: "About Us — SIGNAL°",
-  description: "Learn why SIGNAL° exists and how it helps teams become visible to answer engines.",
+  title: "About Us — GEOCITATION",
+  description: "Learn why GEOCITATION exists and how it helps teams become visible to answer engines.",
 };
 
 export default function AboutPage() {
   return (
     <InfoPage
-      eyebrow="ABOUT / SIGNAL OBSERVATORY"
+      eyebrow="ABOUT / GEOCITATION"
       title="We make invisible AI visibility visible."
-      intro="SIGNAL° is built for teams who know their website exists, but need proof that AI systems can actually find, read and trust it."
+      intro="GEOCITATION is built for teams who know their website exists, but need proof that AI systems can actually find, read and trust it."
     >
       <div className="story-grid">
         <article className="story-card large">
@@ -32,7 +32,7 @@ export default function AboutPage() {
         <article className="story-card">
           <span>BUILT FOR</span>
           <h3>Founders, agencies and content teams.</h3>
-          <p>Use SIGNAL° to see what is blocking AI visibility before investing in a redesign, content plan or GEO campaign.</p>
+          <p>Use GEOCITATION to see what is blocking AI visibility before investing in a redesign, content plan or GEO campaign.</p>
         </article>
       </div>
     </InfoPage>
