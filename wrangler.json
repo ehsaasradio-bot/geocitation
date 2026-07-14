@@ -1,0 +1,28 @@
+{
+  "name": "ai-signal-observatory",
+  "main": "dist/server/index.js",
+  "compatibility_date": "2026-07-09",
+  "compatibility_flags": [
+    "nodejs_compat",
+    "global_fetch_strictly_public",
+    "enable_request_signal"
+  ],
+  "assets": {
+    "directory": "dist/client"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "SIGNAL_ADMIN_EMAILS": "syedmubashirhaq@gmail.com",
+    "OPENAI_VISIBILITY_MODEL": "gpt-5-mini"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "audits",
+      "database_id": "25a01ff2-2e6d-4940-a1d1-7d89ef3644f5",
+      "migrations_dir": "drizzle"
+    }
+  ]
+}
