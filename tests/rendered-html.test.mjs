@@ -457,7 +457,33 @@ test("password-protects the research page", async () => {
   const unlockedHtml = await unlocked.text();
   assert.match(unlockedHtml, /The Mirqab Dossier/);
   assert.match(unlockedHtml, /Scrunch — Competitive Intelligence Report/);
-  assert.match(unlockedHtml, /FINAL MIRQAB DOSSIER/);
+  assert.match(unlockedHtml, /Read the dossier as it was designed/);
+  assert.match(unlockedHtml, /Zaher, decoded\./);
+  assert.match(unlockedHtml, /\/research\/comparison/);
+
+  const accessCookie =
+    "geocitation_research_access=aedf56cf8888ed021269942e142521a8cb5fa1df811d09d708adee86b1576a56";
+
+  const zaherLocked = await worker.fetch(new Request("http://localhost/research/zaher", {
+    headers: { accept: "text/html" },
+  }), env, ctx);
+  assert.equal(zaherLocked.status, 302);
+  assert.equal(zaherLocked.headers.get("location"), "/research");
+
+  const zaherUnlocked = await worker.fetch(new Request("http://localhost/research/zaher", {
+    headers: { accept: "text/html", cookie: accessCookie },
+  }), env, ctx);
+  assert.equal(zaherUnlocked.status, 200);
+  const zaherHtml = await zaherUnlocked.text();
+  assert.match(zaherHtml, /A real first mover,/);
+  assert.match(zaherHtml, /Claims versus evidence\./);
+
+  const comparisonUnlocked = await worker.fetch(new Request("http://localhost/research/comparison", {
+    headers: { accept: "text/html", cookie: accessCookie },
+  }), env, ctx);
+  assert.equal(comparisonUnlocked.status, 200);
+  const comparisonHtml = await comparisonUnlocked.text();
+  assert.match(comparisonHtml, /Nothing to compare — yet\./);
 });
 
 test("accepts a same-origin done-for-you project intake", async () => {

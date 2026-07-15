@@ -579,6 +579,27 @@ footer > div a:hover { color: var(--signal); }
 .adr-panel span { color: var(--amber); }
 .adr-cta { background: var(--amber); }
 
+/* === Teardown series — two-by-two research grid on /research === */
+.mirqab-teardowns { max-width: 1180px; margin: 0 auto 110px; padding: 0 clamp(20px,4vw,48px); text-align: center; }
+.mirqab-teardowns .mirqab-kicker { margin-bottom: 26px; }
+.mirqab-teardowns > h2 { margin: 0; color: var(--paper); font-size: clamp(38px,4.6vw,66px); font-weight: 620; letter-spacing: -.055em; line-height: .95; }
+.teardown-grid { margin-top: 48px; }
+.teardown-card { display: block; }
+a.teardown-card { text-decoration: none; }
+a.teardown-card:hover { background: rgba(201,255,71,.045); }
+.teardown-card .teardown-cta { display: block; margin-top: 20px; color: var(--signal); font: 750 10px var(--font-geist-mono),monospace; font-style: normal; letter-spacing: .14em; text-transform: uppercase; }
+.mirqab-part-card.reserved { outline: 1px dashed rgba(241,238,229,.22); outline-offset: -12px; }
+.mirqab-part-card.reserved span { color: rgba(241,238,229,.35); }
+.mirqab-part-card.reserved h2 { color: rgba(241,238,229,.42); }
+
+/* === Comparison — cross-series panel on /research + empty page === */
+.comparison-panel > div { background: radial-gradient(circle at 82% 30%,rgba(152,160,255,.13),transparent 40%),rgba(255,255,255,.014); }
+.comparison-panel span { color: #98a0ff; }
+.comparison-cta { background: #98a0ff; }
+.comparison-empty { max-width: 720px; margin: 64px auto 40px; padding: 60px 28px; border: 1px dashed var(--line); }
+.comparison-empty strong { display: block; margin-bottom: 16px; color: rgba(241,238,229,.4); font: 600 24px var(--font-geist-mono),monospace; letter-spacing: .3em; }
+.comparison-empty p { margin: 0 auto; max-width: 520px; color: var(--muted); font-size: 15px; line-height: 1.6; }
+
 /* === /research/adr — ADR decision log page === */
 .adr-hero { position: relative; max-width: 1180px; margin: 0 auto; padding: clamp(64px,7vw,100px) clamp(20px,4vw,48px) 56px; text-align: center; background: radial-gradient(circle at 50% 10%,rgba(255,202,92,.09),transparent 34%); }
 .adr-hero h1 { margin: 22px 0 0; color: var(--paper); font-size: clamp(40px,6vw,78px); font-weight: 640; letter-spacing: -.055em; line-height: .98; }

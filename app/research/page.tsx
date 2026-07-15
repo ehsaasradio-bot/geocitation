@@ -59,7 +59,40 @@ const metrics = [
   ["6", "Working documents combined"],
   ["102", "Pages in the final dossier"],
   ["12+8", "Research dimensions and market sweeps"],
-  ["59", "Competitor pages read in full"],
+  ["59+29", "Competitor pages read in full"],
+];
+
+const teardownCards = [
+  {
+    eyebrow: "NO. 01 · JULY 13, 2026",
+    title: "Scrunch, decoded.",
+    copy: "The $225M incumbent — Sitecore's GEO acquisition, 500+ enterprise brands, and the AXP edge-delivery moat everyone is measured against. Part 1 of the dossier.",
+    tone: "blue",
+    href: "/research/report",
+    cta: "In the dossier",
+  },
+  {
+    eyebrow: "NO. 02 · JULY 15, 2026",
+    title: "Geoptie, decoded.",
+    copy: "A content-marketing machine wearing a SaaS platform — the Tor.app factory's keyword play, self-ranked #1 in sixteen of sixteen posts. Part 6 of the dossier.",
+    tone: "dark",
+    href: "/research/report",
+    cta: "In the dossier",
+  },
+  {
+    eyebrow: "NO. 03 · JULY 16, 2026",
+    title: "Zaher, decoded.",
+    copy: "A real first mover wearing a bigger company's numbers — the direct Arabic-GEO competitor, eleven months ahead. All 29 pages read; 5·6·7 engine claims; the $7.99 hidden tier.",
+    tone: "green",
+    href: "/research/zaher",
+    cta: "Open the teardown",
+  },
+  {
+    eyebrow: "NO. 04 · RESERVED",
+    title: "Next teardown.",
+    copy: "The grid keeps its two-by-two rhythm as the series grows — the next target slots in here.",
+    tone: "reserved",
+  },
 ];
 
 export default async function ResearchPage() {
@@ -134,6 +167,53 @@ export default async function ResearchPage() {
           </a>
         </div>
       </section>
+
+      <section className="mirqab-teardowns" aria-labelledby="teardown-series-title">
+        <p className="mirqab-kicker">TEARDOWN SERIES · ONE COMPETITOR AT A TIME</p>
+        <h2 id="teardown-series-title">Research, two by two.</h2>
+        <div className="mirqab-part-grid teardown-grid">
+          {teardownCards.map((card) =>
+            card.href ? (
+              <a
+                className={`mirqab-part-card teardown-card ${card.tone}`}
+                href={card.href}
+                key={card.eyebrow}
+              >
+                <span>{card.eyebrow}</span>
+                <h2>{card.title}</h2>
+                <p>{card.copy}</p>
+                <em className="teardown-cta">{card.cta} ↗</em>
+              </a>
+            ) : (
+              <article
+                className={`mirqab-part-card teardown-card ${card.tone}`}
+                key={card.eyebrow}
+              >
+                <span>{card.eyebrow}</span>
+                <h2>{card.title}</h2>
+                <p>{card.copy}</p>
+              </article>
+            ),
+          )}
+        </div>
+      </section>
+
+      <section className="mirqab-open-panel comparison-panel" aria-label="Open the comparison page">
+        <div>
+          <div>
+            <span>COMPARISON · CROSS-SERIES</span>
+            <h2>Score the series side by side.</h2>
+            <p>
+              Reserved for the matrix — Scrunch vs Geoptie vs Zaher vs Mirqab
+              on pricing, engines, evidence standards, and go-to-market. Empty
+              by design, ready when the series is.
+            </p>
+          </div>
+          <a className="mirqab-open-cta comparison-cta" href="/research/comparison">
+            Open comparison <span aria-hidden>↗</span>
+          </a>
+        </div>
+      </section>
     </main>
   );
 }
@@ -177,7 +257,9 @@ function ReportHeader({ unlocked = false }: { unlocked?: boolean }) {
         {unlocked ? (
           <>
             <a className="solid" href="/research/report">Full report</a>
+            <a href="/research/zaher">Zaher teardown</a>
             <Link href="/research/adr">Decision log</Link>
+            <Link href="/research/comparison">Comparison</Link>
           </>
         ) : null}
         <Link href="/methodology">Method</Link>
