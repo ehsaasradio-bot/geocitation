@@ -519,56 +519,60 @@ footer > div a:hover { color: var(--signal); }
 .research-note-grid article { min-height: 320px; padding: 30px; background: rgba(255,255,255,.012); }
 .research-note-grid h3 { margin: 88px 0 18px; font-size: clamp(30px,3vw,46px); font-weight: 500; letter-spacing: -.055em; line-height: .94; }
 
-.mirqab-report-page { min-height: 100vh; background: #f7f7f4; color: #1f2025; font-family: var(--font-geist-sans), Arial, sans-serif; }
-.mirqab-report-header { position: sticky; top: 0; z-index: 50; min-height: 78px; padding: 0 clamp(22px,5vw,92px); display: flex; align-items: center; justify-content: space-between; gap: 28px; border-bottom: 1px solid #dedfe6; background: rgba(247,247,244,.92); backdrop-filter: blur(18px); }
+/* === Mirqab dossier — /research (dark, matches site theme) === */
+.mirqab-report-page { min-height: 100vh; background: #070908; color: var(--paper); }
+.mirqab-report-header { position: sticky; top: 0; z-index: 50; min-height: 78px; padding: 0 clamp(22px,5vw,92px); display: flex; align-items: center; justify-content: space-between; gap: 28px; border-bottom: 1px solid var(--line); background: rgba(7,9,8,.9); backdrop-filter: blur(18px); }
 .mirqab-report-mark { display: inline-flex; align-items: center; }
-.mirqab-report-mark img { display: block; width: clamp(96px,8vw,136px); height: auto; filter: none; }
-.mirqab-report-header nav { display: flex; align-items: center; gap: 12px; padding: 0; border: 0; border-radius: 0; background: transparent; backdrop-filter: none; }
-.mirqab-report-header nav a { min-height: 38px; padding: 0 15px; display: inline-flex; align-items: center; border: 1px solid #dadce5; border-radius: 999px; color: #535763; background: #fff; font: 720 10px var(--font-geist-mono),monospace; letter-spacing: .12em; text-transform: uppercase; }
-.mirqab-report-header nav a:hover { color: #005dcc; border-color: #005dcc; }
-.mirqab-cover { max-width: 1120px; margin: 0 auto; padding: clamp(76px,8vw,118px) clamp(20px,4vw,48px) 72px; text-align: center; }
-.mirqab-kicker { margin: 0 0 34px; color: #005dcc; font: 800 clamp(12px,1.45vw,18px) var(--font-geist-mono),monospace; letter-spacing: .24em; text-transform: uppercase; }
-.mirqab-arabic { margin: 0 auto 14px; color: #4159dc; font-size: clamp(74px,8vw,124px); font-weight: 800; line-height: 1; direction: rtl; }
-.mirqab-cover h1,.mirqab-lock-hero h1 { margin: 0; color: #1c1d22; font-size: clamp(58px,8vw,104px); font-weight: 760; letter-spacing: -.075em; line-height: .9; }
-.mirqab-subtitle,.mirqab-lock-hero > p { max-width: 1020px; margin: 34px auto 0; color: #6d7078; font-size: clamp(20px,2.2vw,31px); line-height: 1.42; }
-.mirqab-meta { margin: 38px 0 0; color: #747780; font-size: clamp(14px,1.5vw,18px); letter-spacing: .02em; }
-.mirqab-part-grid { margin-top: 72px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 22px; text-align: left; }
-.mirqab-part-card { min-height: 214px; padding: 32px 34px; border: 1px solid #dedfe6; border-radius: 26px; background: #fff; box-shadow: 0 14px 40px rgba(21,23,31,.035); }
-.mirqab-part-card span { color: #005dcc; font: 820 13px var(--font-geist-mono),monospace; letter-spacing: .2em; text-transform: uppercase; }
-.mirqab-part-card.green span { color: #007f50; }
-.mirqab-part-card.dark span { color: #31343c; }
-.mirqab-part-card h2 { margin: 24px 0 16px; color: #1f2025; font-size: clamp(24px,2.5vw,32px); font-weight: 760; letter-spacing: -.04em; line-height: 1.17; }
-.mirqab-part-card p { margin: 0; color: #6d7078; font-size: 18px; line-height: 1.45; }
-.mirqab-stats { max-width: 1120px; margin: 0 auto 86px; padding: 54px 38px; display: grid; grid-template-columns: repeat(4,1fr); gap: 22px; background: #efeff2; }
-.mirqab-stats article { min-height: 150px; padding: 28px; display: flex; flex-direction: column; justify-content: center; border: 1px solid #dedfe6; border-radius: 24px; background: #fff; }
-.mirqab-stats strong { color: #1f2025; font-size: clamp(44px,4.5vw,64px); line-height: 1; letter-spacing: -.06em; }
-.mirqab-stats span { margin-top: 20px; color: #6d7078; font-size: 16px; line-height: 1.4; }
-.mirqab-intro-panel { max-width: 1120px; margin: 0 auto 70px; display: grid; grid-template-columns: 1fr .78fr; gap: 28px; padding: 0 clamp(20px,4vw,48px); }
-.mirqab-intro-panel > div,.mirqab-intro-panel > p { margin: 0; padding: 34px; border: 1px solid #dedfe6; border-radius: 26px; background: #fff; }
-.mirqab-intro-panel span,.mirqab-lock-panel span { color: #005dcc; font: 820 12px var(--font-geist-mono),monospace; letter-spacing: .18em; text-transform: uppercase; }
-.mirqab-intro-panel h2,.mirqab-lock-panel h2 { margin: 28px 0 0; font-size: clamp(36px,4.6vw,74px); font-weight: 760; letter-spacing: -.07em; line-height: .92; }
-.mirqab-intro-panel > p,.mirqab-lock-panel p { display: flex; align-items: flex-end; color: #686c75; font-size: clamp(17px,1.7vw,22px); line-height: 1.55; }
-.mirqab-reader { max-width: 1360px; margin: 0 auto; padding: 0 clamp(18px,3vw,42px) 110px; display: grid; grid-template-columns: 260px minmax(0,1fr); gap: 32px; align-items: start; }
-.mirqab-toc { position: sticky; top: 104px; padding: 22px; border: 1px solid #dedfe6; border-radius: 22px; background: #fff; }
-.mirqab-toc p { margin: 0 0 18px; color: #005dcc; font: 820 11px var(--font-geist-mono),monospace; letter-spacing: .18em; }
-.mirqab-toc a { min-height: 38px; display: flex; align-items: center; border-top: 1px solid #ececf0; color: #535763; font-size: 13px; line-height: 1.25; }
-.mirqab-toc a:hover { color: #005dcc; }
-.mirqab-pages { display: grid; gap: 28px; min-width: 0; }
-.mirqab-sheet { scroll-margin-top: 98px; padding: clamp(24px,4vw,54px); border: 1px solid #dedfe6; border-radius: 24px; background: #fff; box-shadow: 0 16px 44px rgba(21,23,31,.045); }
-.mirqab-sheet-head { margin-bottom: 28px; display: flex; justify-content: space-between; gap: 18px; border-bottom: 1px solid #d8d9df; padding-bottom: 14px; }
-.mirqab-sheet-head span { color: #005dcc; font: 800 11px var(--font-geist-mono),monospace; letter-spacing: .16em; text-transform: uppercase; }
-.mirqab-sheet pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; color: #2a2c32; font: 500 clamp(13px,1.12vw,16px)/1.64 var(--font-geist-sans),Arial,sans-serif; }
+.mirqab-report-mark img { display: block; width: clamp(96px,8vw,136px); height: auto; }
+.mirqab-report-header nav { display: flex; align-items: center; gap: 10px; }
+.mirqab-report-header nav a { min-height: 38px; padding: 0 15px; display: inline-flex; align-items: center; border: 1px solid rgba(241,238,229,.28); border-radius: 999px; color: var(--paper); background: transparent; font: 720 10px var(--font-geist-mono),monospace; letter-spacing: .12em; text-transform: uppercase; transition: border-color .25s ease,color .25s ease; }
+.mirqab-report-header nav a:hover { color: var(--signal); border-color: var(--signal); }
+.mirqab-report-header nav a.solid { background: var(--signal); border-color: var(--signal); color: var(--ink); }
+.mirqab-cover { position: relative; max-width: 1180px; margin: 0 auto; padding: clamp(76px,8vw,118px) clamp(20px,4vw,48px) 72px; text-align: center; background: radial-gradient(circle at 50% 12%,rgba(201,255,71,.09),transparent 34%),radial-gradient(circle at 72% 55%,rgba(89,103,255,.07),transparent 30%); }
+.mirqab-kicker { margin: 0 0 34px; color: var(--signal); font: 800 clamp(11px,1.3vw,15px) var(--font-geist-mono),monospace; letter-spacing: .24em; text-transform: uppercase; }
+.mirqab-arabic { margin: 0 auto 14px; font-size: clamp(74px,8vw,124px); font-weight: 800; line-height: 1.15; direction: rtl; background: linear-gradient(92deg,var(--signal),#8fdc74 45%,var(--cobalt)); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.mirqab-cover h1,.mirqab-lock-hero h1 { margin: 0; color: var(--paper); font-size: clamp(58px,8vw,104px); font-weight: 640; letter-spacing: -.07em; line-height: .9; }
+.mirqab-subtitle,.mirqab-lock-hero > p:not(.mirqab-kicker) { max-width: 940px; margin: 34px auto 0; color: var(--muted); font-size: clamp(18px,2vw,26px); line-height: 1.45; }
+.mirqab-meta { margin: 38px 0 0; color: rgba(241,238,229,.44); font: 650 clamp(10px,1.2vw,12px) var(--font-geist-mono),monospace; letter-spacing: .14em; text-transform: uppercase; }
+.mirqab-part-grid { margin-top: 72px; display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 1px; border: 1px solid var(--line); background: var(--line); text-align: left; }
+.mirqab-part-card { min-height: 214px; padding: 32px 34px; background: #070908; transition: background .25s ease; }
+.mirqab-part-card:hover { background: rgba(255,255,255,.02); }
+.mirqab-part-card span { color: #98a0ff; font: 800 11px var(--font-geist-mono),monospace; letter-spacing: .2em; text-transform: uppercase; }
+.mirqab-part-card.green span { color: var(--signal); }
+.mirqab-part-card.dark span { color: rgba(241,238,229,.5); }
+.mirqab-part-card h2 { margin: 22px 0 14px; color: var(--paper); font-size: clamp(22px,2.3vw,30px); font-weight: 620; letter-spacing: -.035em; line-height: 1.15; }
+.mirqab-part-card p { margin: 0; color: var(--muted); font-size: 15px; line-height: 1.55; }
+.mirqab-stats { max-width: 1180px; margin: 0 auto 86px; padding: 0 clamp(20px,4vw,48px); display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; }
+.mirqab-stats article { min-height: 170px; padding: 28px; display: flex; flex-direction: column; justify-content: flex-end; border: 1px solid var(--line); margin: 0 0 0 -1px; background: rgba(255,255,255,.012); }
+.mirqab-stats strong { color: var(--signal); font-size: clamp(44px,4.5vw,64px); line-height: .9; letter-spacing: -.06em; font-weight: 520; }
+.mirqab-stats span { margin-top: 18px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.mirqab-open-panel { max-width: 1180px; margin: 0 auto 110px; padding: 0 clamp(20px,4vw,48px); }
+.mirqab-open-panel > div { display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: center; gap: 34px; padding: clamp(30px,4vw,50px); border: 1px solid var(--line); background: radial-gradient(circle at 82% 30%,rgba(201,255,71,.1),transparent 40%),rgba(255,255,255,.014); }
+.mirqab-open-panel span { color: var(--signal); font: 800 11px var(--font-geist-mono),monospace; letter-spacing: .18em; text-transform: uppercase; }
+.mirqab-open-panel h2 { margin: 18px 0 12px; color: var(--paper); font-size: clamp(30px,3.6vw,52px); font-weight: 620; letter-spacing: -.05em; line-height: .98; }
+.mirqab-open-panel p { margin: 0; max-width: 640px; color: var(--muted); font-size: 15px; line-height: 1.6; }
+.mirqab-open-cta { min-width: 250px; min-height: 58px; padding: 0 22px; display: flex; align-items: center; justify-content: space-between; gap: 14px; border-radius: 999px; background: var(--signal); color: var(--ink); font: 750 11px var(--font-geist-mono),monospace; letter-spacing: .1em; text-transform: uppercase; transition: transform .25s ease; }
+.mirqab-open-cta:hover { transform: translateY(-3px); }
 .mirqab-locked-page { min-height: 100vh; }
-.mirqab-lock-hero { max-width: 1060px; margin: 0 auto; padding: clamp(86px,9vw,128px) clamp(22px,4vw,46px) 48px; text-align: center; }
-.mirqab-lock-panel { max-width: 980px; margin: 0 auto; padding: 0 clamp(22px,4vw,46px) 96px; display: grid; grid-template-columns: 1fr minmax(320px,.68fr); gap: 1px; }
-.mirqab-lock-panel > div,.mirqab-lock-panel .research-gate-form { min-height: 360px; padding: 34px; border: 1px solid #dedfe6; background: #fff; }
-.mirqab-lock-panel > div { border-radius: 26px 0 0 26px; }
-.mirqab-lock-panel .research-gate-form { border-left: 0; border-radius: 0 26px 26px 0; display: flex; flex-direction: column; justify-content: flex-end; gap: 18px; }
+.mirqab-lock-hero { max-width: 1060px; margin: 0 auto; padding: clamp(86px,9vw,128px) clamp(22px,4vw,46px) 48px; text-align: center; background: radial-gradient(circle at 50% 20%,rgba(201,255,71,.08),transparent 36%); }
+.mirqab-lock-panel { max-width: 980px; margin: 0 auto; padding: 0 clamp(22px,4vw,46px) 96px; display: grid; grid-template-columns: 1fr minmax(320px,.68fr); gap: 1px; border: 1px solid var(--line); background: var(--line); }
+.mirqab-lock-panel > div,.mirqab-lock-panel .research-gate-form { min-height: 360px; padding: 34px; background: #070908; }
+.mirqab-lock-panel > div { display: flex; flex-direction: column; justify-content: flex-end; background: radial-gradient(circle at 62% 22%,rgba(201,255,71,.1),transparent 34%),#070908; }
+.mirqab-lock-panel span { color: var(--signal); font: 800 11px var(--font-geist-mono),monospace; letter-spacing: .18em; text-transform: uppercase; }
+.mirqab-lock-panel h2 { margin: 26px 0 14px; color: var(--paper); font-size: clamp(34px,4.2vw,64px); font-weight: 620; letter-spacing: -.055em; line-height: .94; }
+.mirqab-lock-panel p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.65; }
+.mirqab-lock-panel .research-gate-form { display: flex; flex-direction: column; justify-content: flex-end; gap: 18px; }
 .mirqab-lock-panel .research-gate-form label { display: grid; gap: 12px; }
-.mirqab-lock-panel .research-gate-form label span { color: #005dcc; font: 820 11px var(--font-geist-mono),monospace; letter-spacing: .16em; text-transform: uppercase; }
-.mirqab-lock-panel .research-gate-form input { height: 58px; border: 1px solid #d8d9df; background: #f7f7f4; color: #1f2025; padding: 0 16px; font: inherit; }
-.mirqab-lock-panel .research-gate-form button { height: 58px; width: 100%; border: 0; border-radius: 999px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; background: #005dcc; color: #fff; cursor: pointer; font: 820 11px var(--font-geist-mono),monospace; letter-spacing: .12em; text-transform: uppercase; }
-.mirqab-lock-panel .research-gate-form p { margin: 0; color: #b42318; font-size: 14px; }
+.mirqab-lock-panel .research-gate-form label span { color: var(--signal); font: 800 10px var(--font-geist-mono),monospace; letter-spacing: .16em; text-transform: uppercase; }
+.mirqab-lock-panel .research-gate-form input { height: 58px; border: 1px solid rgba(241,238,229,.2); background: rgba(255,255,255,.025); color: var(--paper); padding: 0 16px; font: inherit; }
+.mirqab-lock-panel .research-gate-form input::placeholder { color: rgba(241,238,229,.32); }
+.mirqab-lock-panel .research-gate-form button { height: 58px; width: 100%; border: 0; border-radius: 999px; padding: 0 20px; display: flex; align-items: center; justify-content: space-between; background: var(--signal); color: var(--ink); cursor: pointer; font: 800 11px var(--font-geist-mono),monospace; letter-spacing: .12em; text-transform: uppercase; }
+.mirqab-lock-panel .research-gate-form button:disabled { opacity: .68; cursor: wait; }
+.mirqab-lock-panel .research-gate-form p { margin: 0; color: var(--coral); font-size: 14px; }
+@media (max-width: 900px) {
+  .mirqab-part-grid,.mirqab-stats { grid-template-columns: 1fr; }
+  .mirqab-lock-panel,.mirqab-open-panel > div { grid-template-columns: 1fr; }
+}
 
 .report-page { min-height: 100vh; background: #070908; color: var(--paper); }
 .report-nav { position: relative; z-index: 20; height: 86px; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding: 0 3.25vw; border-bottom: 1px solid var(--line); background: rgba(7,9,8,.9); backdrop-filter: blur(18px); }
@@ -1076,7 +1080,7 @@ footer > div a:hover { color: var(--signal); }
   .mirqab-kicker { margin-bottom: 24px; font-size: 10px; letter-spacing: .18em; }
   .mirqab-arabic { font-size: 70px; }
   .mirqab-cover h1,.mirqab-lock-hero h1 { font-size: 52px; }
-  .mirqab-subtitle,.mirqab-lock-hero > p { margin-top: 24px; font-size: 18px; }
+  .mirqab-subtitle,.mirqab-lock-hero > p:not(.mirqab-kicker) { margin-top: 24px; font-size: 18px; }
   .mirqab-meta { font-size: 13px; line-height: 1.5; }
   .mirqab-part-grid { margin-top: 42px; gap: 14px; }
   .mirqab-part-card { min-height: 0; padding: 24px 22px; border-radius: 20px; }

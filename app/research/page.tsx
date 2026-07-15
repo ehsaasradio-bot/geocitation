@@ -5,24 +5,16 @@ import {
   RESEARCH_ACCESS_COOKIE,
   RESEARCH_ACCESS_TOKEN,
 } from "../../lib/research/access";
-import dossier from "./mirqab-dossier-pages.json";
 import { ResearchGate } from "./research-gate";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "The Mirqab Dossier — Full Report",
+  title: "The Mirqab Dossier — Private Research",
   description:
-    "The full Mirqab Dossier: complete working documents from the final PDF, including market intelligence, platform architecture, PRDs, execution plan, ADR and teardown.",
+    "Password-protected research: The Mirqab Dossier — market intelligence, platform architecture, PRDs, execution plan, ADR and competitor teardown.",
+  robots: { index: false, follow: false },
 };
-
-type DossierPage = {
-  number: number;
-  sourcePage: number;
-  text: string;
-};
-
-const dossierPages = dossier.pages as DossierPage[];
 
 const partCards = [
   {
@@ -52,7 +44,7 @@ const partCards = [
   {
     eyebrow: "PART 5 · DECISION",
     title: "ADR-001 — Pilot Kickoff Record",
-    copy: "The parked architecture decision: what we build, what it is blocked on, what happens the day it is accepted.",
+    copy: "The accepted architecture decision: what we build, what it was blocked on, and what started the day it was accepted.",
     tone: "dark",
   },
   {
@@ -64,21 +56,10 @@ const partCards = [
 ];
 
 const metrics = [
-  ["102", "PDF pages in the final dossier"],
   ["6", "Working documents combined"],
-  ["12", "Scrunch research dimensions"],
-  ["8", "Wide market sweeps cross-verified"],
-];
-
-const toc = [
-  ["Cover", "page-1"],
-  ["Part 1 · External Intelligence", "page-3"],
-  ["Part 2 · Foundation", "page-24"],
-  ["Part 3 · Product", "page-44"],
-  ["Part 4 · Execution", "page-56"],
-  ["Part 5 · Decision", "page-74"],
-  ["Part 6 · Teardown", "page-77"],
-  ["Full extracted report", "full-report"],
+  ["102", "Pages in the final dossier"],
+  ["12+8", "Research dimensions and market sweeps"],
+  ["59", "Competitor pages read in full"],
 ];
 
 export default async function ResearchPage() {
@@ -87,14 +68,17 @@ export default async function ResearchPage() {
 
   return (
     <main className="mirqab-report-page" id="main-content">
-      <ReportHeader />
+      <ReportHeader unlocked />
 
       <section className="mirqab-cover" aria-labelledby="mirqab-title">
         <p className="mirqab-kicker">FOUNDER · OWAIS · ALI — COMPLETE WORKING DOCUMENTS</p>
         <div className="mirqab-arabic" lang="ar">مِرقاب</div>
         <h1 id="mirqab-title">The Mirqab Dossier.</h1>
         <p className="mirqab-subtitle">
-          Everything, in one document: the market intelligence that found the opportunity, the architecture that can win it, the product plans sized to our team, the decision record that starts the build, and the competitor decoded page by page.
+          Everything, in one document: the market intelligence that found the
+          opportunity, the architecture that can win it, the product plans sized
+          to our team, the decision record that started the build, and the
+          competitor decoded page by page.
         </p>
         <p className="mirqab-meta">Compiled July 15, 2026 · Six documents · Cross-verified research corpus</p>
         <div className="mirqab-part-grid">
@@ -117,33 +101,20 @@ export default async function ResearchPage() {
         ))}
       </section>
 
-      <section className="mirqab-intro-panel">
+      <section className="mirqab-open-panel" aria-label="Open the full report">
         <div>
-          <span>FULL REPORT</span>
-          <h2>Final PDF converted into a web-native dossier.</h2>
-        </div>
-        <p>
-          This page follows the final PDF as the source of truth. The typography, cards, blue/green accents, page rhythm and executive-report layout are adapted from the local dossier itself rather than from the public landing page.
-        </p>
-      </section>
-
-      <section className="mirqab-reader" id="full-report">
-        <aside className="mirqab-toc" aria-label="Report table of contents">
-          <p>CONTENTS</p>
-          {toc.map(([label, href]) => (
-            <a href={`#${href}`} key={href}>{label}</a>
-          ))}
-        </aside>
-        <div className="mirqab-pages">
-          {dossierPages.map((page) => (
-            <article className="mirqab-sheet" id={`page-${page.number}`} key={page.number}>
-              <div className="mirqab-sheet-head">
-                <span>PAGE {String(page.number).padStart(3, "0")}</span>
-                <span>FINAL MIRQAB DOSSIER</span>
-              </div>
-              <pre>{page.text}</pre>
-            </article>
-          ))}
+          <div>
+            <span>FULL REPORT · DESIGNED EDITION</span>
+            <h2>Read the dossier as it was designed.</h2>
+            <p>
+              The complete report with its original typography, charts, tables
+              and part navigation — re-tinted to this site&apos;s dark theme.
+              Opens in this tab; your access stays valid for seven days.
+            </p>
+          </div>
+          <a className="mirqab-open-cta" href="/research/report">
+            Open the full report <span aria-hidden>↗</span>
+          </a>
         </div>
       </section>
     </main>
@@ -159,14 +130,19 @@ function LockedDossier() {
         <div className="mirqab-arabic" lang="ar">مِرقاب</div>
         <h1>Research access is protected.</h1>
         <p>
-          Enter the access password to view The Mirqab Dossier: the full final report with market intelligence, platform architecture, MVP plan, pilot execution record, ADR and teardown.
+          Enter the access password to read The Mirqab Dossier — the full final
+          report with market intelligence, platform architecture, MVP plan,
+          pilot execution record, ADR and competitor teardown.
         </p>
       </section>
       <section className="mirqab-lock-panel">
         <div>
           <span>ACCESS</span>
           <h2>Private working document.</h2>
-          <p>The report content is rendered only after password verification. The unlocked view uses the final PDF as the source of truth.</p>
+          <p>
+            The report renders only after password verification. Access is
+            remembered on this device for seven days.
+          </p>
         </div>
         <ResearchGate />
       </section>
@@ -174,14 +150,16 @@ function LockedDossier() {
   );
 }
 
-function ReportHeader() {
+function ReportHeader({ unlocked = false }: { unlocked?: boolean }) {
   return (
     <header className="mirqab-report-header">
       <Link href="/" className="mirqab-report-mark" aria-label="GEOCITATION home">
         <img src="/geocitation-logo.png" alt="GEOCITATION" />
       </Link>
       <nav aria-label="Report navigation">
-        <a href="#full-report">Full report</a>
+        {unlocked ? (
+          <a className="solid" href="/research/report">Full report</a>
+        ) : null}
         <Link href="/methodology">Method</Link>
         <Link href="/contact">Contact</Link>
       </nav>

@@ -37,7 +37,23 @@ const localBindingConfig = {
     : [],
 };
 
-export default defineConfig(async () => {
+export default defineConfig(async ({ command }) => {
+  // The placeholder D1/R2 bindings exist only so local dev has something to
+  // bind against. During `build` the real bindings come from wrangler.json;
+  // including the placeholder there produces a duplicate "DB" binding that
+  // `wrangler deploy` rejects.
+  const bindingConfig =
+    command === "build"
+      ? {
+          ...localBindingConfig,
+          d1_databases: [],
+          r2_buckets: [],
+          // wrangler.json already declares these; duplicating them here makes
+          // the merged dist config fail API validation (error 10021).
+          compatibility_flags: [],
+        }
+      : localBindingConfig;
+
   // Keep Wrangler and Miniflare state project-local. These are non-secret tool
   // settings; application environment belongs in ignored `.env*` files.
   process.env.WRANGLER_WRITE_LOGS ??= "false";
@@ -56,7 +72,7 @@ export default defineConfig(async () => {
       sites(),
       cloudflare({
         viteEnvironment: { name: "rsc", childEnvironments: ["ssr"] },
-        config: localBindingConfig,
+        config: bindingConfig,
       }),
     ],
   };
