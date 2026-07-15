@@ -38,7 +38,7 @@ em { font-style: normal; }
 }
 
 .brand { display: inline-flex; align-items: center; width: max-content; max-width: min(230px, 42vw); line-height: 1; white-space: nowrap; }
-.brand-logo { display: block; width: clamp(118px, 9.5vw, 172px); height: auto; aspect-ratio: 1683 / 853; object-fit: contain; filter: drop-shadow(0 0 16px rgba(201,255,71,.1)); }
+.brand-logo { display: block; width: clamp(122px, 9.8vw, 178px); height: auto; aspect-ratio: 1654 / 778; object-fit: contain; filter: drop-shadow(0 0 16px rgba(201,255,71,.14)); }
 nav { display: flex; align-items: center; gap: 30px; padding: 12px 20px; border: 1px solid rgba(241,238,229,.08); border-radius: 999px; background: rgba(7,9,8,.52); backdrop-filter: blur(14px); }
 nav a { font-size: 12px; text-transform: uppercase; letter-spacing: .13em; color: rgba(241,238,229,.7); transition: color .25s ease; }
 nav a:hover { color: var(--signal); }
