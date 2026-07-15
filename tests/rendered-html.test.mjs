@@ -455,8 +455,9 @@ test("password-protects the research page", async () => {
   }), env, ctx);
   assert.equal(unlocked.status, 200);
   const unlockedHtml = await unlocked.text();
-  assert.match(unlockedHtml, /A research layer for answer-engine visibility/);
-  assert.match(unlockedHtml, /REPORT ARCHITECTURE/);
+  assert.match(unlockedHtml, /The Mirqab Dossier/);
+  assert.match(unlockedHtml, /Scrunch — Competitive Intelligence Report/);
+  assert.match(unlockedHtml, /FINAL MIRQAB DOSSIER/);
 });
 
 test("accepts a same-origin done-for-you project intake", async () => {

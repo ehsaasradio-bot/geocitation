@@ -1,149 +1,191 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { cookies } from "next/headers";
 import {
   RESEARCH_ACCESS_COOKIE,
   RESEARCH_ACCESS_TOKEN,
 } from "../../lib/research/access";
-import { InfoPage } from "../info-pages";
+import dossier from "./mirqab-dossier-pages.json";
 import { ResearchGate } from "./research-gate";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Research — GEOCITATION",
-  description: "The research model behind GEOCITATION: what to capture, how to score AI visibility and how evidence-backed reports are produced.",
+  title: "The Mirqab Dossier — Full Report",
+  description:
+    "The full Mirqab Dossier: complete working documents from the final PDF, including market intelligence, platform architecture, PRDs, execution plan, ADR and teardown.",
 };
 
-const researchLayers = [
+type DossierPage = {
+  number: number;
+  sourcePage: number;
+  text: string;
+};
+
+const dossierPages = dossier.pages as DossierPage[];
+
+const partCards = [
   {
-    index: "01",
-    title: "Discovery surface",
-    copy: "We start with what answer engines can actually reach: robots.txt, sitemap.xml, canonical pages, internal links, status codes, redirects and machine-readable guidance such as llms.txt.",
-    signal: "crawl",
+    eyebrow: "PART 1 · INTELLIGENCE",
+    title: "Scrunch — Competitive Intelligence Report",
+    copy: "The $225M Sitecore acquisition decoded: product, pricing, moats, fault lines, and the seven-play competitive playbook.",
+    tone: "blue",
   },
   {
-    index: "02",
-    title: "Machine understanding",
-    copy: "Pages are reviewed for extractable answer blocks, entity clarity, headings, schema, organization facts, authorship, pricing and topical relationships that help an AI system build confidence.",
-    signal: "parse",
+    eyebrow: "PART 2 · FOUNDATION",
+    title: "Blueprint — GEO Platform Architecture",
+    copy: "Full technical design: monitoring, governed content, attribution, compliance — with none of the incumbents' liabilities.",
+    tone: "blue",
   },
   {
-    index: "03",
-    title: "Trust evidence",
-    copy: "The report separates claims from proof: first-party evidence, external references, freshness, contactability, policy pages, structured data and consistency across the public site.",
-    signal: "verify",
+    eyebrow: "PART 3 · PRODUCT",
+    title: "Mirqab — MVP PRD v1.0",
+    copy: "Arabic-first AI visibility for Saudi Arabia: scope, stack, 12-week plan, decision gates, design-partner program, risk register.",
+    tone: "green",
   },
   {
-    index: "04",
-    title: "Citation readiness",
-    copy: "Each finding is translated into actions a team can ship: answer-first page sections, schema patches, crawler policy fixes, llms.txt improvements and model-testing prompts.",
-    signal: "cite",
+    eyebrow: "PART 4 · EXECUTION",
+    title: "Mirqab Pilot — PRD v2.0 · Built by Three",
+    copy: "The plan re-engineered for Founder + Owais + Ali: operating model, definitions of done, pilot-scale gates, day-90 decision.",
+    tone: "green",
+  },
+  {
+    eyebrow: "PART 5 · DECISION",
+    title: "ADR-001 — Pilot Kickoff Record",
+    copy: "The parked architecture decision: what we build, what it is blocked on, what happens the day it is accepted.",
+    tone: "dark",
+  },
+  {
+    eyebrow: "PART 6 · TEARDOWN",
+    title: "Geoptie — Decoded, All 59 Pages",
+    copy: "The Tor.app content machine read in full: product mechanics, pricing tricks, credibility audit, and what we copy vs. avoid.",
+    tone: "dark",
   },
 ];
 
-const reportOutputs = [
-  "Executive score with grade and confidence band",
-  "Crawler access matrix for public AI agents",
-  "Page-level evidence with source-linked findings",
-  "Entity and trust gap map",
-  "Answer extractability review",
-  "Copy-ready JSON-LD and llms.txt recommendations",
-  "Prioritized 30/60/90-day roadmap",
-  "Premium model-observation prompts and citation log",
+const metrics = [
+  ["102", "PDF pages in the final dossier"],
+  ["6", "Working documents combined"],
+  ["12", "Scrunch research dimensions"],
+  ["8", "Wide market sweeps cross-verified"],
+];
+
+const toc = [
+  ["Cover", "page-1"],
+  ["Part 1 · External Intelligence", "page-3"],
+  ["Part 2 · Foundation", "page-24"],
+  ["Part 3 · Product", "page-44"],
+  ["Part 4 · Execution", "page-56"],
+  ["Part 5 · Decision", "page-74"],
+  ["Part 6 · Teardown", "page-77"],
+  ["Full extracted report", "full-report"],
 ];
 
 export default async function ResearchPage() {
   const unlocked = await isResearchUnlocked();
-  if (!unlocked) {
-    return (
-      <InfoPage
-        eyebrow="RESEARCH / PRIVATE"
-        title="Research access is protected."
-        intro="This page contains the working research model behind GEOCITATION. Enter the access password to view the full notes, scoring logic and report architecture."
-      >
-        <section className="research-gate-panel">
-          <div>
-            <span>RESEARCH ACCESS</span>
-            <h2>Private draft. Public site protected.</h2>
-            <p>The live research page is available only after password verification. The rest of the site remains public.</p>
-          </div>
-          <ResearchGate />
-        </section>
-      </InfoPage>
-    );
-  }
+  if (!unlocked) return <LockedDossier />;
 
   return (
-    <InfoPage
-      eyebrow="RESEARCH / AI VISIBILITY"
-      title="A research layer for answer-engine visibility."
-      intro="GEOCITATION treats AI visibility as an evidence problem: what can be discovered, what can be understood, what can be trusted and what is ready to be cited."
-    >
-      <div className="research-page-shell">
-        <section className="research-manifesto">
-          <div>
-            <span>RESEARCH PREMISE</span>
-            <h2>People will pay only when the report shows what changed, why it matters and exactly what to do next.</h2>
-          </div>
-          <p>
-            The product logic is built around a simple promise: do not sell vague GEO advice. Capture public evidence, convert it into measurable signals, explain the risk in plain language and produce fixes that a founder, marketer or developer can act on immediately.
-          </p>
-        </section>
+    <main className="mirqab-report-page" id="main-content">
+      <ReportHeader />
 
-        <section className="research-radar" aria-label="GEOCITATION research layers">
-          <div className="research-radar-visual" aria-hidden="true">
-            <i />
-            <i />
-            <i />
-            <b>GEO</b>
-            <span>DISCOVER</span>
-            <span>UNDERSTAND</span>
-            <span>TRUST</span>
-            <span>CITE</span>
-          </div>
-          <div className="research-layer-grid">
-            {researchLayers.map((layer) => (
-              <article className="research-layer-card" key={layer.index}>
-                <div><span>{layer.index}</span><small>{layer.signal}</small></div>
-                <h3>{layer.title}</h3>
-                <p>{layer.copy}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+      <section className="mirqab-cover" aria-labelledby="mirqab-title">
+        <p className="mirqab-kicker">FOUNDER · OWAIS · ALI — COMPLETE WORKING DOCUMENTS</p>
+        <div className="mirqab-arabic" lang="ar">مِرقاب</div>
+        <h1 id="mirqab-title">The Mirqab Dossier.</h1>
+        <p className="mirqab-subtitle">
+          Everything, in one document: the market intelligence that found the opportunity, the architecture that can win it, the product plans sized to our team, the decision record that starts the build, and the competitor decoded page by page.
+        </p>
+        <p className="mirqab-meta">Compiled July 15, 2026 · Six documents · Cross-verified research corpus</p>
+        <div className="mirqab-part-grid">
+          {partCards.map((card) => (
+            <article className={`mirqab-part-card ${card.tone}`} key={card.eyebrow}>
+              <span>{card.eyebrow}</span>
+              <h2>{card.title}</h2>
+              <p>{card.copy}</p>
+            </article>
+          ))}
+        </div>
+      </section>
 
-        <section className="research-output-panel">
-          <div>
-            <p className="lead-line light">REPORT ARCHITECTURE</p>
-            <h2>From crawl evidence to client-ready decisions.</h2>
-            <p>Every paid report should feel worth opening twice: once for the strategic picture and once for the implementation checklist.</p>
-          </div>
-          <ul>
-            {reportOutputs.map((output, index) => (
-              <li key={output}><span>{String(index + 1).padStart(2, "0")}</span>{output}</li>
-            ))}
-          </ul>
-        </section>
+      <section className="mirqab-stats" aria-label="Dossier summary">
+        {metrics.map(([value, label]) => (
+          <article key={label}>
+            <strong>{value}</strong>
+            <span>{label}</span>
+          </article>
+        ))}
+      </section>
 
-        <section className="research-note-grid">
-          <article>
-            <span>CAPTURE</span>
-            <h3>What the scanner should preserve.</h3>
-            <p>URL, fetch status, page role, visible headings, metadata, schema types, robots rules, sitemap presence, link context, llms.txt content and the source snippet behind every recommendation.</p>
-          </article>
-          <article>
-            <span>SCORE</span>
-            <h3>How the score should earn trust.</h3>
-            <p>Use deterministic checks for the base grade, then add optional model observations as clearly labeled evidence. Never imply a model cited a page unless the observation was actually recorded.</p>
-          </article>
-          <article>
-            <span>PRODUCE</span>
-            <h3>How reports become valuable.</h3>
-            <p>Show the finding, the proof, the business meaning and the exact fix. The customer should leave with a roadmap, not a mystery dashboard.</p>
-          </article>
-        </section>
-      </div>
-    </InfoPage>
+      <section className="mirqab-intro-panel">
+        <div>
+          <span>FULL REPORT</span>
+          <h2>Final PDF converted into a web-native dossier.</h2>
+        </div>
+        <p>
+          This page follows the final PDF as the source of truth. The typography, cards, blue/green accents, page rhythm and executive-report layout are adapted from the local dossier itself rather than from the public landing page.
+        </p>
+      </section>
+
+      <section className="mirqab-reader" id="full-report">
+        <aside className="mirqab-toc" aria-label="Report table of contents">
+          <p>CONTENTS</p>
+          {toc.map(([label, href]) => (
+            <a href={`#${href}`} key={href}>{label}</a>
+          ))}
+        </aside>
+        <div className="mirqab-pages">
+          {dossierPages.map((page) => (
+            <article className="mirqab-sheet" id={`page-${page.number}`} key={page.number}>
+              <div className="mirqab-sheet-head">
+                <span>PAGE {String(page.number).padStart(3, "0")}</span>
+                <span>FINAL MIRQAB DOSSIER</span>
+              </div>
+              <pre>{page.text}</pre>
+            </article>
+          ))}
+        </div>
+      </section>
+    </main>
+  );
+}
+
+function LockedDossier() {
+  return (
+    <main className="mirqab-report-page mirqab-locked-page" id="main-content">
+      <ReportHeader />
+      <section className="mirqab-lock-hero">
+        <p className="mirqab-kicker">PRIVATE DOSSIER · PASSWORD REQUIRED</p>
+        <div className="mirqab-arabic" lang="ar">مِرقاب</div>
+        <h1>Research access is protected.</h1>
+        <p>
+          Enter the access password to view The Mirqab Dossier: the full final report with market intelligence, platform architecture, MVP plan, pilot execution record, ADR and teardown.
+        </p>
+      </section>
+      <section className="mirqab-lock-panel">
+        <div>
+          <span>ACCESS</span>
+          <h2>Private working document.</h2>
+          <p>The report content is rendered only after password verification. The unlocked view uses the final PDF as the source of truth.</p>
+        </div>
+        <ResearchGate />
+      </section>
+    </main>
+  );
+}
+
+function ReportHeader() {
+  return (
+    <header className="mirqab-report-header">
+      <Link href="/" className="mirqab-report-mark" aria-label="GEOCITATION home">
+        <img src="/geocitation-logo.png" alt="GEOCITATION" />
+      </Link>
+      <nav aria-label="Report navigation">
+        <a href="#full-report">Full report</a>
+        <Link href="/methodology">Method</Link>
+        <Link href="/contact">Contact</Link>
+      </nav>
+    </header>
   );
 }
 
