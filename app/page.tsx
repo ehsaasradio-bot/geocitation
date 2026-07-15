@@ -491,6 +491,7 @@ export default function Home() {
         </a>
         <nav aria-label="Main navigation">
           <a href="#method">Method</a>
+          <a href="/research">Research</a>
           <a href="#pricing">Pricing</a>
           <a href="/faq">FAQ</a>
           <a href="/about">About</a>
@@ -499,7 +500,7 @@ export default function Home() {
         </nav>
         <details className="mobile-menu">
           <summary>Menu</summary>
-          <div><a href="#method">Method</a><a href="#pricing">Pricing</a><a href="/faq">FAQ</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/account">My reports</a><a href="#scanner">Run an audit</a></div>
+          <div><a href="#method">Method</a><a href="/research">Research</a><a href="#pricing">Pricing</a><a href="/faq">FAQ</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/account">My reports</a><a href="#scanner">Run an audit</a></div>
         </details>
         <a className="header-cta" href="#scanner">Run an audit <span>↗</span></a>
       </header>
@@ -811,7 +812,7 @@ export default function Home() {
       <footer>
         <a className="brand footer-brand" href="#top"><img className="brand-logo" src="/geocitation-logo.png" alt="GEOCITATION" /></a>
         <p>AI visibility, made observable.</p>
-        <div><a href="#method">Method</a><a href="#pricing">Pricing</a><a href="/faq">FAQ</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div>
+        <div><a href="#method">Method</a><a href="/research">Research</a><a href="#pricing">Pricing</a><a href="/faq">FAQ</a><a href="/about">About</a><a href="/contact">Contact</a><a href="/privacy">Privacy</a><a href="/terms">Terms</a></div>
         <span>© 2026 GEOCITATION</span>
       </footer>
     </main>

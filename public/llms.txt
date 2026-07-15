@@ -6,6 +6,7 @@ GEOCITATION is an evidence-backed website audit for public AI discoverability an
 
 - [Home and live audit](https://geocitation.org/)
 - [Methodology](https://geocitation.org/methodology)
+- [Research model](https://geocitation.org/research)
 - [Frequently asked questions](https://geocitation.org/faq)
 - [About GEOCITATION](https://geocitation.org/about)
 - [Privacy policy](https://geocitation.org/privacy)

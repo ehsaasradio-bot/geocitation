@@ -405,6 +405,7 @@ test("server-renders the full public information and report routes", async () =>
     ["/faq", /Questions answer engines would ask/],
     ["/methodology", /A score you can inspect/],
     ["/privacy", /Report storage/],
+    ["/research", /A research layer for answer-engine visibility/],
     ["/report", /ASSEMBLING EVIDENCE REPORT/],
     ["/terms", /Sandbox checkout/],
   ]);

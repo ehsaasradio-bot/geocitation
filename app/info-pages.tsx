@@ -17,13 +17,14 @@ export function InfoPage({ eyebrow, title, intro, children }: InfoPageProps) {
         </Link>
         <nav aria-label="Page navigation">
           <Link href="/methodology">Method</Link>
+          <Link href="/research">Research</Link>
           <Link href="/faq">FAQ</Link>
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>
         </nav>
         <details className="mobile-menu">
           <summary>Menu</summary>
-          <div><Link href="/methodology">Method</Link><Link href="/faq">FAQ</Link><Link href="/about">About</Link><Link href="/contact">Contact</Link><Link href="/#scanner">Run an audit</Link></div>
+          <div><Link href="/methodology">Method</Link><Link href="/research">Research</Link><Link href="/faq">FAQ</Link><Link href="/about">About</Link><Link href="/contact">Contact</Link><Link href="/#scanner">Run an audit</Link></div>
         </details>
         <Link className="header-cta" href="/#scanner">Run an audit <span>↗</span></Link>
       </header>
@@ -55,6 +56,7 @@ export function InfoPage({ eyebrow, title, intro, children }: InfoPageProps) {
         <div>
           <Link href="/faq">FAQ</Link>
           <Link href="/methodology">Methodology</Link>
+          <Link href="/research">Research</Link>
           <Link href="/about">About</Link>
           <Link href="/contact">Contact</Link>
           <Link href="/privacy">Privacy</Link>
