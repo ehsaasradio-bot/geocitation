@@ -13,11 +13,11 @@ const isCodexSeatbeltSandbox = process.env.CODEX_SANDBOX === "seatbelt";
 
 const localBindingConfig = {
   main: "./worker/index.ts",
-  compatibility_flags: [
-    "nodejs_compat",
-    "global_fetch_strictly_public",
-    "enable_request_signal",
-  ],
+  // wrangler.json already declares these; repeating them here — in dev or
+  // build — makes the Cloudflare plugin merge duplicate flags into the
+  // effective config, which crashes the workerd runtime on startup with
+  // "Compatibility flag specified multiple times: nodejs_compat".
+  compatibility_flags: [] as string[],
   d1_databases: d1
     ? [
         {
@@ -44,14 +44,7 @@ export default defineConfig(async ({ command }) => {
   // `wrangler deploy` rejects.
   const bindingConfig =
     command === "build"
-      ? {
-          ...localBindingConfig,
-          d1_databases: [],
-          r2_buckets: [],
-          // wrangler.json already declares these; duplicating them here makes
-          // the merged dist config fail API validation (error 10021).
-          compatibility_flags: [],
-        }
+      ? { ...localBindingConfig, d1_databases: [], r2_buckets: [] }
       : localBindingConfig;
 
   // Keep Wrangler and Miniflare state project-local. These are non-secret tool

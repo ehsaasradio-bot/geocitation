@@ -117,6 +117,23 @@ export default async function ResearchPage() {
           </a>
         </div>
       </section>
+
+      <section className="mirqab-open-panel adr-panel" aria-label="Open the decision log">
+        <div>
+          <div>
+            <span>ADR · DECISION LOG</span>
+            <h2>Every decision. Who does it, by when.</h2>
+            <p>
+              Architecture Decision Records turned into a live requirements
+              tracker — a master timeline of every commitment across the
+              pilot, plus the full context behind each one.
+            </p>
+          </div>
+          <a className="mirqab-open-cta adr-cta" href="/research/adr">
+            Open the decision log <span aria-hidden>↗</span>
+          </a>
+        </div>
+      </section>
     </main>
   );
 }
@@ -158,7 +175,10 @@ function ReportHeader({ unlocked = false }: { unlocked?: boolean }) {
       </Link>
       <nav aria-label="Report navigation">
         {unlocked ? (
-          <a className="solid" href="/research/report">Full report</a>
+          <>
+            <a className="solid" href="/research/report">Full report</a>
+            <Link href="/research/adr">Decision log</Link>
+          </>
         ) : null}
         <Link href="/methodology">Method</Link>
         <Link href="/contact">Contact</Link>
