@@ -405,7 +405,7 @@ test("server-renders the full public information and report routes", async () =>
     ["/faq", /Questions answer engines would ask/],
     ["/methodology", /A score you can inspect/],
     ["/privacy", /Report storage/],
-    ["/research", /A research layer for answer-engine visibility/],
+    ["/research", /Research access is protected/],
     ["/report", /ASSEMBLING EVIDENCE REPORT/],
     ["/terms", /Sandbox checkout/],
   ]);
@@ -415,6 +415,48 @@ test("server-renders the full public information and report routes", async () =>
     assert.equal(response.status, 200, `${path} should render`);
     assert.match(await response.text(), pattern);
   }
+});
+
+test("password-protects the research page", async () => {
+  const worker = await loadWorker("research-password");
+  const locked = await worker.fetch(new Request("http://localhost/research", {
+    headers: { accept: "text/html" },
+  }), env, ctx);
+  assert.equal(locked.status, 200);
+  const lockedHtml = await locked.text();
+  assert.match(lockedHtml, /Research access is protected/);
+  assert.match(lockedHtml, /\/api\/research-access/);
+  assert.doesNotMatch(lockedHtml, /People will pay only when the report shows/);
+
+  const wrongPassword = await worker.fetch(new Request("http://localhost/api/research-access", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ password: "wrong" }),
+  }), env, ctx);
+  assert.equal(wrongPassword.status, 401);
+
+  const correctPassword = await worker.fetch(new Request("https://geocitation.org/api/research-access", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ password: "PubThere1947!" }),
+  }), env, ctx);
+  assert.equal(correctPassword.status, 200);
+  const setCookie = correctPassword.headers.get("set-cookie") ?? "";
+  assert.match(setCookie, /geocitation_research_access=/);
+  assert.match(setCookie, /HttpOnly/);
+  assert.match(setCookie, /Secure/);
+  assert.doesNotMatch(setCookie, /PubThere1947/);
+
+  const unlocked = await worker.fetch(new Request("http://localhost/research", {
+    headers: {
+      accept: "text/html",
+      cookie: "geocitation_research_access=aedf56cf8888ed021269942e142521a8cb5fa1df811d09d708adee86b1576a56",
+    },
+  }), env, ctx);
+  assert.equal(unlocked.status, 200);
+  const unlockedHtml = await unlocked.text();
+  assert.match(unlockedHtml, /A research layer for answer-engine visibility/);
+  assert.match(unlockedHtml, /REPORT ARCHITECTURE/);
 });
 
 test("accepts a same-origin done-for-you project intake", async () => {

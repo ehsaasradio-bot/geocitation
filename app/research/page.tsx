@@ -1,5 +1,13 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
+import {
+  RESEARCH_ACCESS_COOKIE,
+  RESEARCH_ACCESS_TOKEN,
+} from "../../lib/research/access";
 import { InfoPage } from "../info-pages";
+import { ResearchGate } from "./research-gate";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Research — GEOCITATION",
@@ -44,7 +52,27 @@ const reportOutputs = [
   "Premium model-observation prompts and citation log",
 ];
 
-export default function ResearchPage() {
+export default async function ResearchPage() {
+  const unlocked = await isResearchUnlocked();
+  if (!unlocked) {
+    return (
+      <InfoPage
+        eyebrow="RESEARCH / PRIVATE"
+        title="Research access is protected."
+        intro="This page contains the working research model behind GEOCITATION. Enter the access password to view the full notes, scoring logic and report architecture."
+      >
+        <section className="research-gate-panel">
+          <div>
+            <span>RESEARCH ACCESS</span>
+            <h2>Private draft. Public site protected.</h2>
+            <p>The live research page is available only after password verification. The rest of the site remains public.</p>
+          </div>
+          <ResearchGate />
+        </section>
+      </InfoPage>
+    );
+  }
+
   return (
     <InfoPage
       eyebrow="RESEARCH / AI VISIBILITY"
@@ -117,4 +145,9 @@ export default function ResearchPage() {
       </div>
     </InfoPage>
   );
+}
+
+async function isResearchUnlocked(): Promise<boolean> {
+  const cookieStore = await cookies();
+  return cookieStore.get(RESEARCH_ACCESS_COOKIE)?.value === RESEARCH_ACCESS_TOKEN;
 }
