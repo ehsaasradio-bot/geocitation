@@ -486,6 +486,80 @@ test("password-protects the research page", async () => {
   assert.match(comparisonHtml, /Nothing to compare — yet\./);
 });
 
+test("gates the hidden deepdive area behind a shared-secret magic link", async () => {
+  const worker = await loadWorker("deepdive-gate");
+  const KEY = "36966334dfd2e6f00863533057c21f1427d0dd20";
+  const ACCESS_COOKIE =
+    "geocitation_deepdive_access=6323d9430d3e96af809dee8cff425f3e6aa7e91768c3d9a955b973d4adacec33";
+
+  // No cookie, no key -> invite-only locked notice (no password field)
+  const locked = await worker.fetch(new Request("http://localhost/deepdive", {
+    headers: { accept: "text/html" },
+  }), env, ctx);
+  assert.equal(locked.status, 200);
+  const lockedHtml = await locked.text();
+  assert.match(lockedHtml, /opened by link/i);
+  assert.doesNotMatch(lockedHtml, /Scrunch, decoded/);
+
+  // Wrong key -> bounced back to /deepdive with no access cookie
+  const wrongKey = await worker.fetch(new Request("http://localhost/api/deepdive-access?key=nope", {
+    headers: { accept: "text/html" },
+  }), env, ctx);
+  assert.equal(wrongKey.status, 302);
+  assert.equal(wrongKey.headers.get("location"), "/deepdive");
+  assert.doesNotMatch(wrongKey.headers.get("set-cookie") ?? "", /geocitation_deepdive_access=\w/);
+
+  // Correct key -> access cookie set, HttpOnly + Secure on https, key not echoed
+  const goodKey = await worker.fetch(new Request(`https://geocitation.org/api/deepdive-access?key=${KEY}`, {
+    headers: { accept: "text/html" },
+  }), env, ctx);
+  assert.equal(goodKey.status, 302);
+  assert.equal(goodKey.headers.get("location"), "/deepdive");
+  const setCookie = goodKey.headers.get("set-cookie") ?? "";
+  assert.match(setCookie, /geocitation_deepdive_access=/);
+  assert.match(setCookie, /HttpOnly/);
+  assert.match(setCookie, /Secure/);
+  assert.doesNotMatch(setCookie, new RegExp(KEY));
+
+  // With the access cookie, the 2x2 hub renders all three dives
+  const hub = await worker.fetch(new Request("http://localhost/deepdive", {
+    headers: { accept: "text/html", cookie: ACCESS_COOKIE },
+  }), env, ctx);
+  assert.equal(hub.status, 200);
+  const hubHtml = await hub.text();
+  assert.match(hubHtml, /Deep dives\./);
+  assert.match(hubHtml, /Scrunch, decoded\./);
+  assert.match(hubHtml, /Geoptie, decoded\./);
+  assert.match(hubHtml, /Zaher, decoded\./);
+
+  // Report routes: locked without cookie, served with it
+  for (const [slug, needle] of [
+    ["scrunch", /Scrunch,/],
+    ["geoptie", /Geoptie,/],
+    ["zaher", /A real first mover,/],
+  ]) {
+    const closed = await worker.fetch(new Request(`http://localhost/deepdive/${slug}`, {
+      headers: { accept: "text/html" },
+    }), env, ctx);
+    assert.equal(closed.status, 302);
+    assert.equal(closed.headers.get("location"), "/deepdive");
+
+    const open = await worker.fetch(new Request(`http://localhost/deepdive/${slug}`, {
+      headers: { accept: "text/html", cookie: ACCESS_COOKIE },
+    }), env, ctx);
+    assert.equal(open.status, 200);
+    assert.match(await open.text(), needle);
+  }
+});
+
+test("keeps the deepdive area out of robots and sitemap", async () => {
+  const worker = await loadWorker("deepdive-hidden");
+  const robots = await worker.fetch(new Request("http://localhost/robots.txt"), env, ctx);
+  assert.match(await robots.text(), /Disallow: \/deepdive/);
+  const sitemap = await worker.fetch(new Request("http://localhost/sitemap.xml"), env, ctx);
+  assert.doesNotMatch(await sitemap.text(), /\/deepdive/);
+});
+
 test("accepts a same-origin done-for-you project intake", async () => {
   const worker = await loadWorker("project-intake");
   const inquiryEnv = { ...env, DB: new MockInquiryDb() };
