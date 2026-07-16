@@ -484,6 +484,23 @@ test("password-protects the research page", async () => {
   assert.equal(comparisonUnlocked.status, 200);
   const comparisonHtml = await comparisonUnlocked.text();
   assert.match(comparisonHtml, /Nothing to compare — yet\./);
+
+  // Saudi AI-support briefing: linked from the hub, gated like the rest
+  assert.match(unlockedHtml, /The Kingdom(&#x27;|')s backing, mapped\./);
+
+  const saudiLocked = await worker.fetch(new Request("http://localhost/research/saudi-support", {
+    headers: { accept: "text/html" },
+  }), env, ctx);
+  assert.equal(saudiLocked.status, 302);
+  assert.equal(saudiLocked.headers.get("location"), "/research");
+
+  const saudiUnlocked = await worker.fetch(new Request("http://localhost/research/saudi-support", {
+    headers: { accept: "text/html", cookie: accessCookie },
+  }), env, ctx);
+  assert.equal(saudiUnlocked.status, 200);
+  const saudiHtml = await saudiUnlocked.text();
+  assert.match(saudiHtml, /state industrial policy/);
+  assert.match(saudiHtml, /NSDAI/);
 });
 
 test("gates the hidden deepdive area behind a shared-secret magic link", async () => {

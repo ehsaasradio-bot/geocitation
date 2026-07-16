@@ -579,6 +579,11 @@ footer > div a:hover { color: var(--signal); }
 .adr-panel span { color: var(--amber); }
 .adr-cta { background: var(--amber); }
 
+/* === Saudi AI-support briefing panel on /research (green / Vision 2030) === */
+.saudi-panel > div { background: radial-gradient(circle at 82% 30%,rgba(0,132,61,.16),transparent 42%),rgba(255,255,255,.014); }
+.saudi-panel span { color: #35c46a; }
+.saudi-cta { background: #35c46a; }
+
 /* === Teardown series — two-by-two research grid on /research === */
 .mirqab-teardowns { max-width: 1180px; margin: 0 auto 110px; padding: 0 clamp(20px,4vw,48px); text-align: center; }
 .mirqab-teardowns .mirqab-kicker { margin-bottom: 26px; }

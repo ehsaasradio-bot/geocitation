@@ -168,6 +168,24 @@ export default async function ResearchPage() {
         </div>
       </section>
 
+      <section className="mirqab-open-panel saudi-panel" aria-label="Open the Saudi AI support briefing">
+        <div>
+          <div>
+            <span>STRATEGIC BRIEFING · VISION 2030</span>
+            <h2>The Kingdom&apos;s backing, mapped.</h2>
+            <p>
+              Every lever the Saudi state pulls to fund and favour AI — the
+              strategy, the money a startup can actually reach, the enterprise
+              tax breaks, the AI programs and sandboxes, and a prioritised
+              action list for an Arabic-first company. Sourced, target vs actual.
+            </p>
+          </div>
+          <a className="mirqab-open-cta saudi-cta" href="/research/saudi-support">
+            Open the briefing <span aria-hidden>↗</span>
+          </a>
+        </div>
+      </section>
+
       <section className="mirqab-teardowns" aria-labelledby="teardown-series-title">
         <p className="mirqab-kicker">TEARDOWN SERIES · ONE COMPETITOR AT A TIME</p>
         <h2 id="teardown-series-title">Research, two by two.</h2>
@@ -257,6 +275,7 @@ function ReportHeader({ unlocked = false }: { unlocked?: boolean }) {
         {unlocked ? (
           <>
             <a className="solid" href="/research/report">Full report</a>
+            <a href="/research/saudi-support">Saudi backing</a>
             <a href="/research/zaher">Zaher teardown</a>
             <Link href="/research/adr">Decision log</Link>
             <Link href="/research/comparison">Comparison</Link>
