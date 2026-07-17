@@ -51,6 +51,7 @@ export default async function AdrPage() {
   const proposed = ADRS.filter((a) => a.status === "proposed").length;
   const byOwner = (owner: Owner) => allReqs.filter((r) => r.owner === owner).length;
   const nextUp = allReqs.find((r) => r.status === "pending" || r.status === "blocked");
+  const lastSynced = ADRS.reduce((latest, a) => (a.date > latest ? a.date : latest), ADRS[0].date);
 
   return (
     <main className="mirqab-report-page" id="main-content">
@@ -65,7 +66,7 @@ export default async function AdrPage() {
           written — nothing here is aspirational; every row traces back to a
           decision file in the venture&apos;s decision log.
         </p>
-        <p className="mirqab-meta">Last synced 2026-07-15 · {ADRS.length} decision records · {total} requirements</p>
+        <p className="mirqab-meta">Last synced {lastSynced} · {ADRS.length} decision records · {total} requirements</p>
       </section>
 
       <section className="adr-stats" aria-label="Decision log summary">
