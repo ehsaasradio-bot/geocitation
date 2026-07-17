@@ -57,7 +57,7 @@ function extractKnownCitations(answer: string, report: AuditResult): ProviderCit
 
 export async function kimiAvailability() {
   const env = await runtimeEnv();
-  return { key: "kimi", name: "Kimi citation judge", connected: Boolean(env.KIMI_API_KEY), model: env.KIMI_VISIBILITY_MODEL || DEFAULT_KIMI_VISIBILITY_MODEL };
+  return { key: "kimi", name: "Kimi Citation", connected: Boolean(env.KIMI_API_KEY), model: env.KIMI_VISIBILITY_MODEL || DEFAULT_KIMI_VISIBILITY_MODEL };
 }
 
 export async function runKimiCitationTest(report: AuditResult, prompt: string): Promise<KimiRunResult> {

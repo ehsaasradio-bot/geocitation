@@ -9,7 +9,7 @@ const scanStages = [
   { label: "Testing AI crawler access", meta: "14 agents checked" },
   { label: "Extracting entities & schema", meta: "Parsing JSON-LD" },
   { label: "Reading answer passages", meta: "Scoring extractability" },
-  { label: "Evaluating OpenAI + Kimi signals", meta: "Model citation checks" },
+  { label: "Evaluating OpenAI + Kimi Citation", meta: "Model citation checks" },
   { label: "Assembling visibility fingerprint", meta: "Evidence ready" },
 ];
 
@@ -667,7 +667,7 @@ export default function Home() {
             <span className="agent-ring ring-two" />
             <span className="agent-ring ring-three" />
             <span className="agent-track track-one"><i /><b>OpenAI</b></span>
-            <span className="agent-track track-two"><i /><b>Kimi</b></span>
+            <span className="agent-track track-two"><i /><b>Kimi Cite</b></span>
             <span className="agent-track track-three"><i /><b>ALLaM</b></span>
             <span className="agent-track track-four"><i /><b>GEO</b></span>
             <div className="agent-core">
@@ -677,7 +677,7 @@ export default function Home() {
           </div>
           <div className="agent-caption">
             <h3>Model evidence</h3>
-            <p>Run crawler checks first, then use OpenAI and Kimi-style model tests to see whether your pages are strong enough to be cited.</p>
+            <p>Run crawler checks first, then use OpenAI web search and Kimi Citation tests to see whether your pages are strong enough to be cited.</p>
           </div>
         </div>
         <div className="how-steps" aria-label="How Signal audits a website">
