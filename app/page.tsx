@@ -10,6 +10,7 @@ const scanStages = [
   { label: "Extracting entities & schema", meta: "Parsing JSON-LD" },
   { label: "Reading answer passages", meta: "Scoring extractability" },
   { label: "Evaluating OpenAI + Kimi Citation", meta: "Model citation checks" },
+  { label: "Preparing Kimi Citation lab", meta: "Evidence pack ready" },
   { label: "Assembling visibility fingerprint", meta: "Evidence ready" },
 ];
 
@@ -117,10 +118,11 @@ function ScanGraph({ phase, running, complete, domain, pageNames, nodeTones }: S
     ];
 
     const engines = [
-      { x: 0.82, y: 0.17, name: "GPT" },
-      { x: 0.9, y: 0.36, name: "PERPLEXITY" },
-      { x: 0.84, y: 0.58, name: "GEMINI" },
-      { x: 0.91, y: 0.78, name: "GOOGLE AI" },
+      { x: 0.82, y: 0.15, name: "GPT" },
+      { x: 0.91, y: 0.32, name: "PERPLEXITY" },
+      { x: 0.84, y: 0.49, name: "KIMI\nCITATION" },
+      { x: 0.88, y: 0.65, name: "GEMINI" },
+      { x: 0.92, y: 0.82, name: "GOOGLE AI" },
     ];
 
     const resize = () => {
@@ -273,7 +275,9 @@ function ScanGraph({ phase, running, complete, domain, pageNames, nodeTones }: S
         ctx.font = "600 8px ui-monospace, SFMono-Regular, Menlo, monospace";
         ctx.fillStyle = reached ? "#c9ff47" : "rgba(244,241,232,.42)";
         ctx.textAlign = "center";
-        ctx.fillText(engine.name, ex, ey + 28);
+        engine.name.split("\n").forEach((line, lineIndex) => {
+          ctx.fillText(line, ex, ey + 28 + lineIndex * 11);
+        });
       });
 
       const ring = 28 + (reduced ? 0 : ((time * 0.025) % 18));
@@ -580,7 +584,7 @@ export default function Home() {
               nodeTones={nodeTones}
             />
             <span className="corner-index corner-index-a">A–01 / DISCOVERY</span>
-            <span className="corner-index corner-index-b">{String(Math.max(0, phase + 1)).padStart(2, "0")} / 07</span>
+            <span className="corner-index corner-index-b">{String(Math.max(0, phase + 1)).padStart(2, "0")} / {String(scanStages.length).padStart(2, "0")}</span>
             <div className="scan-data">
               <div className="scan-score">
                 <span>{result ? "Readiness" : "Progress"}</span>
@@ -611,7 +615,7 @@ export default function Home() {
 
               <div className="result-metrics" aria-label="Audit metrics">
                 <div><strong>{result.metrics.pagesScanned}</strong><span>Pages sampled</span></div>
-                <div><strong>{result.metrics.crawlersAllowed}/{result.metrics.crawlersMeasured || "—"}</strong><span>Measured agents allowed</span></div>
+              <div><strong>Kimi</strong><span>Citation lab ready</span></div>
                 <div><strong>{result.metrics.answerBlocks}</strong><span>Answer blocks</span></div>
                 <div><strong>{result.metrics.entities}</strong><span>Entities mapped</span></div>
               </div>
