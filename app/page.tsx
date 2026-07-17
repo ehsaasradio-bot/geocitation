@@ -9,7 +9,7 @@ const scanStages = [
   { label: "Testing AI crawler access", meta: "14 agents checked" },
   { label: "Extracting entities & schema", meta: "Parsing JSON-LD" },
   { label: "Reading answer passages", meta: "Scoring extractability" },
-  { label: "Evaluating answer-engine signals", meta: "43 deterministic checks" },
+  { label: "Evaluating OpenAI + Kimi signals", meta: "Model citation checks" },
   { label: "Assembling visibility fingerprint", meta: "Evidence ready" },
 ];
 
@@ -658,7 +658,7 @@ export default function Home() {
         <div className="how-copy">
           <p className="lead-line light">HOW IT WORKS</p>
           <h2>From invisible site to <span>AI signal.</span></h2>
-          <p>Signal scans how answer engines see your website: whether they can reach it, understand it, trust it and cite it.</p>
+          <p>Signal scans how answer engines and regional models see your website: whether they can reach it, understand it, trust it and cite it.</p>
         </div>
         <div className="how-orbit" aria-hidden="true">
           <span className="how-index">01</span>
@@ -666,18 +666,18 @@ export default function Home() {
             <span className="agent-ring ring-one" />
             <span className="agent-ring ring-two" />
             <span className="agent-ring ring-three" />
-            <span className="agent-track track-one"><i /><b>Discover</b></span>
-            <span className="agent-track track-two"><i /><b>Understand</b></span>
-            <span className="agent-track track-three"><i /><b>Trust</b></span>
-            <span className="agent-track track-four"><i /><b>Cite</b></span>
+            <span className="agent-track track-one"><i /><b>OpenAI</b></span>
+            <span className="agent-track track-two"><i /><b>Kimi</b></span>
+            <span className="agent-track track-three"><i /><b>ALLaM</b></span>
+            <span className="agent-track track-four"><i /><b>GEO</b></span>
             <div className="agent-core">
               <AgentCount />
-              <small>AGENTS</small>
+              <small>MODEL SIGNALS</small>
             </div>
           </div>
           <div className="agent-caption">
-            <h3>Crawler access</h3>
-            <p>See which AI agents can reach your knowledge and which bots are blocked before they ever read the page.</p>
+            <h3>Model evidence</h3>
+            <p>Run crawler checks first, then use OpenAI and Kimi-style model tests to see whether your pages are strong enough to be cited.</p>
           </div>
         </div>
         <div className="how-steps" aria-label="How Signal audits a website">

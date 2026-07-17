@@ -7,6 +7,7 @@ import { visibilityPromptPack } from "../../lib/lab/prompts";
 
 const platforms = [
   { key: "chatgpt", name: "ChatGPT" },
+  { key: "kimi", name: "Kimi" },
   { key: "perplexity", name: "Perplexity" },
   { key: "gemini", name: "Gemini" },
   { key: "claude", name: "Claude" },
@@ -62,15 +63,15 @@ export function VisibilityLab({ reportId }: { reportId: string }) {
     } catch { setError("The observation could not be saved."); } finally { setSaving(""); }
   };
 
-  const runAutomatically = async (promptKey: string) => {
-    const key = `openai:${promptKey}`;
+  const runAutomatically = async (provider: "openai" | "kimi", promptKey: string) => {
+    const key = `${provider}:${promptKey}`;
     setSaving(key);
     setError("");
     try {
-      const response = await fetch("/api/lab-run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reportId, promptKey, provider: "openai" }) });
+      const response = await fetch("/api/lab-run", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reportId, promptKey, provider }) });
       const payload = await response.json() as { run?: AutomatedRun; error?: string };
       if (!response.ok || !payload.run) throw new Error(payload.error || "The provider run failed.");
-      setAutomatedRuns((current) => ({ ...current, [promptKey]: payload.run! }));
+      setAutomatedRuns((current) => ({ ...current, [`${provider}:${promptKey}`]: payload.run! }));
     } catch (runError) { setError(runError instanceof Error ? runError.message : "The provider run failed."); } finally { setSaving(""); }
   };
 
@@ -88,9 +89,14 @@ export function VisibilityLab({ reportId }: { reportId: string }) {
       <div><span>LATEST SANDBOX ORDER</span><strong>{latestOrder?.reference ?? "NONE"}</strong><p>{latestOrder?.statusDetail ?? "No sandbox receipt has been created yet."}</p></div>
       <div>{latestOrder ? <Link href={`/account/orders/${latestOrder.id}`}>Open receipt ↗</Link> : <Link href={`/checkout?plan=full-audit&report=${reportId}&next=lab`}>Open sandbox access ↗</Link>}</div>
     </section>
-    <section className="lab-notice"><strong>{providers.some((provider) => provider.connected) ? "HYBRID TEST MODE" : "MANUAL TEST MODE"}</strong><p>{providers.some((provider) => provider.connected) ? "Connected providers can run automatically. All other platform results remain manual observations." : "Copy a prompt into each provider, inspect its answer and sources, then record the outcome below. No provider credential is currently connected."}</p></section>
+    <section className="lab-notice"><strong>{providers.some((provider) => provider.connected) ? "HYBRID TEST MODE" : "MANUAL TEST MODE"}</strong><p>{providers.some((provider) => provider.connected) ? "Connected providers can run automatically. OpenAI performs live sourced web observations; Kimi judges citation readiness from the saved audit evidence pack." : "Copy a prompt into each provider, inspect its answer and sources, then record the outcome below. No provider credential is currently connected."}</p></section>
     <section className="provider-status" aria-label="Provider connection status">{providers.map((provider) => <div className={provider.connected ? "is-connected" : "is-disconnected"} key={provider.key}><i /><span>{provider.name}</span><strong>{provider.connected ? provider.model || "CONNECTED" : "DISCONNECTED"}</strong></div>)}</section>
-    {providers.find((provider) => provider.key === "openai")?.connected && <section className="automated-runner"><div><p className="lead-line light">OPENAI / AUTOMATED EVIDENCE</p><h2>Run a sourced <span>web observation.</span></h2><p>Each run uses OpenAI Responses web search, stores the returned answer and citations, and checks whether the audited domain appears among cited sources. Daily limit: 10 runs.</p></div><div>{prompts.map((prompt) => { const run = automatedRuns[prompt.key]; return <article key={prompt.key}><span>{prompt.label}</span><p>{prompt.text}</p><button type="button" disabled={saving === `openai:${prompt.key}`} onClick={() => void runAutomatically(prompt.key)}>{saving === `openai:${prompt.key}` ? "Running…" : "Run with OpenAI"} ↗</button>{run && <div className="automated-result"><strong>{run.targetCited ? "TARGET CITED" : "TARGET NOT CITED"}</strong><p>{run.answer}</p><ul>{run.citations.map((citation) => <li key={citation.url}><a href={citation.url} target="_blank" rel="noreferrer">{citation.title} ↗</a></li>)}</ul></div>}</article>; })}</div></section>}
-    <section className="lab-matrix"><div className="lab-matrix-head"><span>PLATFORM</span>{prompts.map((prompt) => <span key={prompt.key}>{prompt.label}</span>)}</div>{platforms.map((platform) => <article key={platform.key}><div><i />{platform.name}<small>{platform.key === "chatgpt" && providers.find((provider) => provider.key === "openai")?.connected ? "OPENAI WEB SEARCH CONNECTED" : "API NOT CONNECTED"}</small></div>{prompts.map((prompt) => { const observation = observationFor(platform.key, prompt.key); const state = observation?.resultState ?? "not_run"; const key = `${platform.key}:${prompt.key}`; return <div className={`lab-test state-${state}`} key={prompt.key}><button type="button" onClick={() => void navigator.clipboard.writeText(prompt.text)}>Copy prompt</button><p>{prompt.text}</p><label><span>Observed result</span><select value={state} disabled={saving === key} onChange={(event) => void save(platform.key, prompt.key, prompt.text, event.target.value as State)}><option value="not_run">Not run</option><option value="cited">Cited with source</option><option value="mentioned">Mentioned, no citation</option><option value="not_found">Not found</option></select></label></div>; })}</article>)}</section>
+    {providers.some((provider) => provider.connected && ["openai", "kimi"].includes(provider.key)) && <section className="automated-runner"><div><p className="lead-line light">MODEL API / AUTOMATED EVIDENCE</p><h2>Run sourced and grounded <span>citation tests.</span></h2><p>OpenAI checks live web visibility with source citations. Kimi reviews the saved audit evidence pack and grades whether the page evidence is strong enough to cite. Daily limit: 10 automated runs.</p></div><div>{prompts.map((prompt) => <article key={prompt.key}><span>{prompt.label}</span><p>{prompt.text}</p><div className="provider-run-actions">{(["openai", "kimi"] as const).map((providerKey) => {
+      const provider = providers.find((item) => item.key === providerKey);
+      if (!provider?.connected) return null;
+      const key = `${providerKey}:${prompt.key}`;
+      return <button key={providerKey} type="button" disabled={saving === key} onClick={() => void runAutomatically(providerKey, prompt.key)}>{saving === key ? "Running…" : `Run with ${provider.name}`} ↗</button>;
+    })}</div>{(["openai", "kimi"] as const).map((providerKey) => { const run = automatedRuns[`${providerKey}:${prompt.key}`]; return run && <div className="automated-result" key={providerKey}><strong>{run.provider.toUpperCase()} · {run.targetCited ? "TARGET CITED" : "TARGET NOT CITED"}</strong><p>{run.answer}</p>{run.citations.length > 0 && <ul>{run.citations.map((citation) => <li key={citation.url}><a href={citation.url} target="_blank" rel="noreferrer">{citation.title} ↗</a></li>)}</ul>}</div>; })}</article>)}</div></section>}
+    <section className="lab-matrix"><div className="lab-matrix-head"><span>PLATFORM</span>{prompts.map((prompt) => <span key={prompt.key}>{prompt.label}</span>)}</div>{platforms.map((platform) => <article key={platform.key}><div><i />{platform.name}<small>{platform.key === "chatgpt" && providers.find((provider) => provider.key === "openai")?.connected ? "OPENAI WEB SEARCH CONNECTED" : platform.key === "kimi" && providers.find((provider) => provider.key === "kimi")?.connected ? "KIMI API CONNECTED" : "API NOT CONNECTED"}</small></div>{prompts.map((prompt) => { const observation = observationFor(platform.key, prompt.key); const state = observation?.resultState ?? "not_run"; const key = `${platform.key}:${prompt.key}`; return <div className={`lab-test state-${state}`} key={prompt.key}><button type="button" onClick={() => void navigator.clipboard.writeText(prompt.text)}>Copy prompt</button><p>{prompt.text}</p><label><span>Observed result</span><select value={state} disabled={saving === key} onChange={(event) => void save(platform.key, prompt.key, prompt.text, event.target.value as State)}><option value="not_run">Not run</option><option value="cited">Cited with source</option><option value="mentioned">Mentioned, no citation</option><option value="not_found">Not found</option></select></label></div>; })}</article>)}</section>
   </>;
 }

@@ -3,8 +3,9 @@ import { hasFullAuditAccess } from "../../../lib/billing/sandbox";
 import { getReport } from "../../../lib/reports/store";
 import { listObservations, saveObservation, type ObservationState } from "../../../lib/lab/store";
 import { openAIAvailability } from "../../../lib/providers/openai";
+import { kimiAvailability } from "../../../lib/providers/kimi";
 
-const platforms = new Set(["chatgpt", "perplexity", "gemini", "claude", "copilot"]);
+const platforms = new Set(["chatgpt", "kimi", "perplexity", "gemini", "claude", "copilot"]);
 const states = new Set<ObservationState>(["not_run", "cited", "mentioned", "not_found"]);
 
 export async function authorizedUser() {
@@ -22,7 +23,7 @@ export async function GET(request: Request) {
   const report = await getReport(auth.user.email, reportId);
   if (!report) return Response.json({ error: "Report not found." }, { status: 404 });
   const observations = await listObservations(auth.user.email, reportId);
-  const providers = [await openAIAvailability(), { key: "perplexity", name: "Perplexity", connected: false }, { key: "gemini", name: "Gemini", connected: false }, { key: "anthropic", name: "Claude", connected: false }, { key: "copilot", name: "Copilot", connected: false }];
+  const providers = [await openAIAvailability(), await kimiAvailability(), { key: "perplexity", name: "Perplexity", connected: false }, { key: "gemini", name: "Gemini", connected: false }, { key: "anthropic", name: "Claude", connected: false }, { key: "copilot", name: "Copilot", connected: false }];
   return Response.json({ report, observations, providers }, { headers: { "Cache-Control": "private, no-store" } });
 }
 

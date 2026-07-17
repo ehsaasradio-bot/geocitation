@@ -15,7 +15,8 @@
   },
   "vars": {
     "SIGNAL_ADMIN_EMAILS": "syedmubashirhaq@gmail.com",
-    "OPENAI_VISIBILITY_MODEL": "gpt-5-mini"
+    "OPENAI_VISIBILITY_MODEL": "gpt-5-mini",
+    "KIMI_VISIBILITY_MODEL": "kimi-k3"
   },
   "d1_databases": [
     {
