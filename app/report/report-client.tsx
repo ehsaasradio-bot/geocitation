@@ -136,6 +136,56 @@ export function ReportClient() {
   const executiveIssues = issues.slice(0, 3);
   const quickWins = issues.filter((finding) => finding.tone === "warn").slice(0, 3);
   const protectedStrengths = strengths.slice(0, 3);
+  const modelRows = [
+    {
+      model: "ChatGPT / OpenAI",
+      connection: "CONNECTED",
+      status: premiumUnlocked ? "LAB READY" : "GATED",
+      detail: "Live web observation with source citations. Run from the premium Visibility Lab.",
+    },
+    {
+      model: "Kimi Citation",
+      connection: "CONNECTED",
+      status: premiumUnlocked ? "LAB READY" : "GATED",
+      detail: "Grounded citation-readiness judge using this saved audit evidence pack.",
+    },
+    {
+      model: "Perplexity",
+      connection: "N/A",
+      status: "N/A",
+      detail: "Manual observation only until a provider API is connected.",
+    },
+    {
+      model: "Gemini",
+      connection: "N/A",
+      status: "N/A",
+      detail: "Manual observation only until a provider API is connected.",
+    },
+    {
+      model: "Google AI",
+      connection: "N/A",
+      status: "N/A",
+      detail: "No direct API citation run is connected in this report.",
+    },
+    {
+      model: "Claude",
+      connection: "N/A",
+      status: "N/A",
+      detail: "Manual observation only until a provider API is connected.",
+    },
+    {
+      model: "Copilot",
+      connection: "N/A",
+      status: "N/A",
+      detail: "Manual observation only until a provider API is connected.",
+    },
+    {
+      model: "ALLaM",
+      connection: "N/A",
+      status: "N/A",
+      detail: "Planned Saudi/Arabic model layer; not connected to this report yet.",
+    },
+  ];
   const exportJson = () => downloadFile(`${safeFilename(result.domain)}-signal-report.json`, JSON.stringify(result, null, 2), "application/json");
   const exportCsv = () => {
     const rows = [["code", "label", "tone", "value", "evidence", "action"], ...result.findings.map((finding) => [finding.code, finding.label, finding.tone, finding.value, finding.evidence, finding.action])];
@@ -168,6 +218,10 @@ export function ReportClient() {
       "## Strengths to protect",
       "",
       ...(protectedStrengths.length ? protectedStrengths.map((finding) => `- ${finding.code}: ${markdownBullet(finding.evidence)}`) : ["- No durable strengths were detected yet."]),
+      "",
+      "## Individual AI model report",
+      "",
+      ...modelRows.map((row) => `- ${row.model}: ${row.connection} / ${row.status}. ${row.detail}`),
       "",
       "## Methodology",
       "",
@@ -227,6 +281,25 @@ export function ReportClient() {
         <div><span>PREMIUM STATE</span><strong>{premiumUnlocked ? "FULL AUDIT ACTIVE" : "LAB LOCKED"}</strong><p>{premiumUnlocked ? "Model-specific prompt testing and the 90-day action map are available on this saved report." : "Unlock the premium layer to turn this audit into a tracked sandbox purchase and lab-ready workflow."}</p></div>
         <div><span>LATEST SANDBOX ORDER</span><strong>{latestOrder?.reference ?? "NONE"}</strong><p>{latestOrder?.statusDetail ?? "No sandbox order is linked to this account yet."}</p></div>
         <div>{premiumUnlocked && latestOrder ? <Link href={`/account/orders/${latestOrder.id}`}>Open receipt ↗</Link> : <Link href={reportId ? `/checkout?plan=full-audit&report=${reportId}&next=lab` : "/checkout?plan=full-audit"}>{premiumUnlocked ? "Open sandbox history ↗" : "Unlock premium ↗"}</Link>}</div>
+      </section>
+
+      <section className="report-section report-models" id="models">
+        <div className="report-section-head">
+          <span>00B / AI MODEL REPORT</span>
+          <div><h2>Individual models, <span>no guessing.</span></h2><p>Each model is listed separately. Connected providers can be run in the Visibility Lab; anything not connected is marked N/A instead of pretending a citation test happened.</p></div>
+        </div>
+        <div className="model-report-table" role="table" aria-label="Individual AI model report">
+          <div className="model-report-head" role="row"><span role="columnheader">Model</span><span role="columnheader">Connection</span><span role="columnheader">Report status</span><span role="columnheader">Use</span></div>
+          {modelRows.map((row) => (
+            <article className={row.connection === "N/A" ? "is-na" : "is-connected"} role="row" key={row.model}>
+              <strong role="cell">{row.model}</strong>
+              <span role="cell">{row.connection}</span>
+              <b role="cell">{row.status}</b>
+              <p role="cell">{row.detail}</p>
+            </article>
+          ))}
+        </div>
+        {reportId ? <Link className="model-report-cta" href={premiumUnlocked ? `/lab?report=${reportId}` : `/checkout?plan=full-audit&report=${reportId}&next=lab`}>{premiumUnlocked ? "Run connected model tests" : "Unlock model tests"} <span>↗</span></Link> : <p className="model-report-note">Save this report to your account before running connected model tests.</p>}
       </section>
 
       <section className="report-brief" id="brief">
